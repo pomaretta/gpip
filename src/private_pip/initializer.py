@@ -3,7 +3,6 @@
 # ========================= #
 
 import os
-from typing import cast
 
 from .downloader import clone_repo
 from .builder import build_package, install_package, clean_dir
@@ -20,7 +19,7 @@ class Repository:
         self.name = name
         self.account = account
         self.pip = pip
-        self.install = dict()
+        self.installed = dict()
     def getURL(self):
         return f"{('','https://')[self.account.https]}{('git',self.account.token)[self.account.token != None]}@github.com{(':','/')[self.account.https]}{self.account.name}/{self.name}"
     def install(self):
@@ -53,7 +52,7 @@ class Repository:
             "path": path
         }
 
-        self.install["clone"] = clone
+        self.installed["clone"] = clone
 
         # ========================= #
         # BUILD STEP                #
@@ -63,7 +62,7 @@ class Repository:
             raise InstanceException("Cannot find Python path in instances or the instance is not of Instance.")
         
         if self.pip.instances != None:
-            python_path = self.pip.instances["python"]
+            python_path = self.pip.instances["python"].path
 
         try:
             build_file = build_package(path,python_path)
@@ -78,7 +77,7 @@ class Repository:
             raise InstanceException("Cannot find Pip path in instances or the instance is not of Instance.")
 
         if self.pip.instances != None:
-            pip_path = self.pip.instances["pip"]
+            pip_path = self.pip.instances["pip"].path
 
         try:
             installed = install_package(
