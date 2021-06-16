@@ -8,7 +8,7 @@ setuptools.setup(
 	name='privatepip',  
 	version='0.1',
 	author="Carlos Pomares",
-	author_email="carlos.pomares@webbeds.com",
+	author_email="cpomaresp@gmail.com",
 	description="A PIP Private Utility Package.",
 	long_description=long_description,
 	long_description_content_type="text/markdown",
