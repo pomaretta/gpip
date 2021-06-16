@@ -3,6 +3,8 @@
 env/
 
 # Python
+__pycache__
 tests/
 dist/
 build/
+*.egg-info/
