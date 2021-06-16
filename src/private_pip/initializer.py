@@ -114,7 +114,7 @@ class PrivatePip:
         self.repositories = dict()
         self.errors = list()
         self.fatal = list()
-    def import(self,input_list: list):
+    def importRepositories(self,input_list: list):
 
         repositories = list()
 
