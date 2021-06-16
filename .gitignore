@@ -1,0 +1,8 @@
+# OS
+.DS_Store
+env/
+
+# Python
+tests/
+dist/
+build/
