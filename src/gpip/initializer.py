@@ -24,7 +24,7 @@ class Repository:
         return f"{('','https://')[self.account.https]}{('git',self.account.token)[self.account.token != None]}@github.com{(':','/')[self.account.https]}{self.account.name}/{self.name}"
     def install(self):
     
-        self.pip: PrivatePip
+        self.pip: GithubPip
 
         python_path = None
         pip_path = None
@@ -105,7 +105,7 @@ class Instance:
         self.name = name
         self.path = path
 
-class PrivatePip:
+class GithubPip:
     def __init__(self,account: Account,instances: dict = None,output: str = None, verbose: bool = False) -> None:
         self.account = account
         self.instances = instances

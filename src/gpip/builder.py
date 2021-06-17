@@ -42,7 +42,7 @@ def install_package(path: str, name: str, instance: str = None) -> bool:
     # CHANGE CWD TO PATH
     os.chdir(path)
 
-    os.system(f"{executor} install ./{name}")
+    os.system(f"{executor} install ./{name} --quiet")
 
     os.chdir(original_cwd)
 

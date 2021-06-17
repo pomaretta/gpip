@@ -21,3 +21,7 @@ class BuildException(Exception):
 class CleanException(Exception):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
+
+class PackageError(Exception):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)

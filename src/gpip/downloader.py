@@ -25,10 +25,10 @@ def clone_repo(repository: str,github_account: str, token: str = None, output: s
     # CHANGE EXECUTION TO OUTPUT PATH
     os.chdir(output_path)
 
-    command = f"git clone {account}@github.com:{github_account}/{repository}"
+    command = f"git clone {account}@github.com:{github_account}/{repository} --quiet"
 
     if https:
-        command = f"git clone https://{account}@github.com/{github_account}/{repository}"
+        command = f"git clone https://{account}@github.com/{github_account}/{repository} --quiet"
     
     # GET THE REPO IN LOCAL TMP
     os.system(command)
