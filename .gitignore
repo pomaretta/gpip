@@ -8,3 +8,6 @@ tests/
 dist/
 build/
 *.egg-info/
+
+# Tests
+build_and_install.sh

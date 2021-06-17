@@ -1,0 +1,76 @@
+#!/usr/bin/env python
+
+# ========================= #
+# CLI TOOL                  #
+# ========================= #
+
+from argparse import ArgumentParser
+
+from gpip.tools import get
+
+def main(args):
+
+    pip = None
+    
+    if args.pip:
+        pip = args.pip
+
+    get(
+        args.get
+
+        ,https=args.https
+        ,pip=pip
+        ,verbose=args.verbose
+        ,upgrade=args.upgrade
+        ,force=args.force
+    )
+
+if __name__ == "__main__":
+
+    parser = ArgumentParser()
+
+    parser.add_argument(
+        '-g','--get'
+        ,required=False
+        ,help="Install the given package."
+        ,type=str
+    )
+
+    parser.add_argument(
+        '--pip'
+        ,required=False
+        ,help="Establish PIP executable to perform installs."
+        ,type=str
+    )
+
+    parser.add_argument(
+        '--https'
+        ,required=False
+        ,help="Enable HTTPS Mode."
+        ,action="store_true"
+    )
+
+    parser.add_argument(
+        '-f','--force'
+        ,required=False
+        ,help="Force install."
+        ,action="store_true"
+    )
+
+    parser.add_argument(
+        '--upgrade'
+        ,required=False
+        ,help="Upgrade package."
+        ,action="store_true"
+    )
+
+    parser.add_argument(
+        '-v','--verbose'
+        ,required=False
+        ,help="Enable Verbose Mode."
+        ,action="store_true"
+    )
+
+    args = parser.parse_args()
+
+    main(args)

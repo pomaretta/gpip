@@ -6,8 +6,8 @@ import importlib.util as imp
 import sys, os
 import re
 
-from initializer import Repository, Account
-from exceptions import PackageError, CloneException, InstallException, BuildException, InstanceException, CleanException
+from .initializer import GithubPip, Repository, Account, Instance
+from .exceptions import PackageError, CloneException, InstallException, BuildException, InstanceException, CleanException
 
 def _checkIfExists(package: str) -> bool:
     # Repositories must name as the packages.
@@ -18,7 +18,7 @@ def _checkIfExists(package: str) -> bool:
     else:
         return False
 
-def _discoverPackages(packages: list, https: bool = False ,pip_instance = None) -> list:
+def _discoverPackages(packages: list, https: bool = False ,pip: str = None, verbose: bool = False, upgrade: bool = False, force: bool = False) -> list:
 
     repositories = list()
 
@@ -31,7 +31,8 @@ def _discoverPackages(packages: list, https: bool = False ,pip_instance = None) 
 
         # Packages must match https path without protocol.
         # github.com/pomaretta/example-package
-        search = re.match(r"^github\.com/[a-zA-Z]+/[a-zA-Z]+$",package)
+        pattern = re.compile("(.+@)*([\w\d\.]+)(:[\d]+){0,1}/*")
+        search = pattern.match(package)
         if not search:
             raise PackageError(f"Error importing package={package}")
 
@@ -42,23 +43,36 @@ def _discoverPackages(packages: list, https: bool = False ,pip_instance = None) 
         repository = os.path.basename(package)
 
         # Avoid extension .git
-        package = package.split('.')[0]
-
-        if not _checkIfExists(package):
+        repository = repository.split('.')[0]
+        
+        if not _checkIfExists(repository) or upgrade or force:
             repositories.append(
                 Repository(
-                    name=package
+                    name=repository
                     ,account=Account(
                         name=account
                         ,https=https
                     )
-                    ,pip=pip_instance
+                    ,pip=GithubPip(
+                        account=Account(
+                            name=account
+                            ,https=https
+                        ),
+                        instances={
+                            "pip": Instance(
+                                name="pip"
+                                ,path=pip
+                            )
+                        }
+                    )
+                    ,upgrade=upgrade
+                    ,force=force
                 )
             )
 
     return repositories
 
-def _installPackages(packages: list):
+def _installPackages(packages: list,verbose: bool = False):
 
     for package in packages:
 
@@ -67,23 +81,33 @@ def _installPackages(packages: list):
         try:
             package.install()
         except CloneException as cloneException:
+            if verbose:
+                print(f"Clone error. Package={package.name}. STACK: {str(cloneException)}")
             continue
         except InstanceException as instanceException:
-            print(f"Panic: Instance path error, using ENV instances on {package.name}")
+            if verbose:
+                print(f"Panic: Instance path error, using ENV instances on {package.name}")
             continue
         except BuildException as buildException:
-            print(f"Fatal: Cannot build repository {package.name} with URL {package.getURL()}")
+            if verbose:
+                print(f"Fatal: Cannot build repository {package.name} with URL {package.getURL()}")
             break
         except InstallException as installException:
-            print(f"Fatal: Cannot install repository {package.name} with URL {package.getURL()}")
+            if verbose:
+                print(f"Fatal: Cannot install repository {package.name} with URL {package.getURL()}")
             break
         except CleanException as cleanException:
+            if verbose:
+                print(f"Clean warning. Package={package.name} STACK: {str(cleanException)}")
             continue
 
 def get(*args, **kwargs):
 
     https = False
     pip_instance = None
+    verbose = False
+    upgrade = False
+    force = False
 
     if "https" in kwargs:
         https = kwargs["https"]
@@ -91,6 +115,22 @@ def get(*args, **kwargs):
     if "pip" in kwargs:
         pip_instance = kwargs["pip"]
 
-    repositories = _discoverPackages(args,https=https,pip_instance=pip_instance)
+    if "verbose" in kwargs:
+        verbose = kwargs["verbose"]
 
-    _installPackages(repositories)
+    if "upgrade" in kwargs:
+        upgrade = kwargs["upgrade"]
+
+    if "force" in kwargs:
+        force = kwargs["force"]
+
+    repositories = _discoverPackages(
+        args
+        ,https=https
+        ,pip=pip_instance
+        ,verbose=verbose
+        ,upgrade=upgrade
+        ,force=force
+    )
+
+    _installPackages(repositories,verbose=verbose)

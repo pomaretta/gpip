@@ -3,6 +3,7 @@
 # ========================= #
 
 import os
+from re import U
 
 from .downloader import clone_repo
 from .builder import build_package, install_package, clean_dir
@@ -15,10 +16,12 @@ class Account:
         self.https = https
 
 class Repository:
-    def __init__(self,name: str, account: Account = None, pip = None) -> None:
+    def __init__(self,name: str, account: Account = None, pip = None, upgrade: bool = None, force: bool = None) -> None:
         self.name = name
         self.account = account
         self.pip = pip
+        self.upgrade = upgrade
+        self.force = force
         self.installed = dict()
     def getURL(self):
         return f"{('','https://')[self.account.https]}{('git',self.account.token)[self.account.token != None]}@github.com{(':','/')[self.account.https]}{self.account.name}/{self.name}"
@@ -26,8 +29,8 @@ class Repository:
     
         self.pip: GithubPip
 
-        python_path = None
-        pip_path = None
+        python_path = "python3"
+        pip_path = "pip3"
 
         # ========================= #
         # CLONE STEP                #
@@ -35,11 +38,10 @@ class Repository:
 
         try:
             created, path = clone_repo(
-                self.name
-                ,self.account.name
-                ,self.account.token
-                ,self.pip.output
-                ,self.account.https
+                repository=self.name
+                ,github_account=self.account.name
+                ,token=self.account.token
+                ,https=self.account.https
             )
         except Exception as e:
             raise CloneException(str(e))
@@ -47,21 +49,14 @@ class Repository:
         if not created:
             raise CloneException("Cannot clone the repository")
 
-        clone = {
-            "created": created,
-            "path": path
-        }
-
-        self.installed["clone"] = clone
-
         # ========================= #
         # BUILD STEP                #
         # ========================= #
 
-        if self.pip.instances != None and not "python" in self.pip.instances and not isinstance(self.pip.instances["python"],Instance):
+        if self.pip.instances != None and "python" in self.pip.instances and not isinstance(self.pip.instances["python"],Instance):
             raise InstanceException("Cannot find Python path in instances or the instance is not of Instance.")
         
-        if self.pip.instances != None:
+        if self.pip.instances != None and "python" in self.pip.instances:
             python_path = self.pip.instances["python"].path
 
         try:
@@ -73,17 +68,28 @@ class Repository:
         # INSTALL STEP              #
         # ========================= #
 
-        if self.pip.instances != None and not "pip" in self.pip.instances and not isinstance(self.pip.instances["pip"],Instance):
+        if self.pip.instances != None and "pip" in self.pip.instances and not isinstance(self.pip.instances["pip"],Instance):
             raise InstanceException("Cannot find Pip path in instances or the instance is not of Instance.")
 
-        if self.pip.instances != None:
+        if self.pip.instances != None and "pip" in self.pip.instances:
             pip_path = self.pip.instances["pip"].path
+
+        upgrade = False
+        force = False
+
+        if self.upgrade != None:
+            upgrade = self.upgrade
+
+        if self.force != None:
+            force = self.force
 
         try:
             installed = install_package(
                 path=(path + os.sep + "dist")
                 ,name=build_file
                 ,instance=pip_path
+                ,upgrade=upgrade
+                ,force=force
             )
         except Exception as e:
             raise InstallException(str(e))

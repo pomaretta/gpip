@@ -19,7 +19,7 @@ def build_package(path: str, instance: str = None) -> str:
     os.chdir(path)
 
     # EXECUTE PACKAGE
-    os.system(f"{executor} setup.py bdist_wheel")
+    os.system(f"{executor} setup.py bdist_wheel --quiet")
 
     # DISCOVER PACKAGE NAME
     os.chdir(path + os.sep + "dist")
@@ -30,7 +30,7 @@ def build_package(path: str, instance: str = None) -> str:
 
     return package
 
-def install_package(path: str, name: str, instance: str = None) -> bool:
+def install_package(path: str, name: str, instance: str = None, upgrade: bool = False, force: bool = False) -> bool:
 
     executor = "pip3"
 
@@ -42,7 +42,7 @@ def install_package(path: str, name: str, instance: str = None) -> bool:
     # CHANGE CWD TO PATH
     os.chdir(path)
 
-    os.system(f"{executor} install ./{name} --quiet")
+    os.system(f"{executor} install ./{name} {('','--upgrade')[upgrade]} {('','--force-reinstall')[force]} --quiet")
 
     os.chdir(original_cwd)
 

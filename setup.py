@@ -8,7 +8,7 @@ setuptools.setup(
 	name='gpip',  
 	version='0.1',
 	scripts=[
-		"src/gpip/bin/gpip"
+		"src/gpip/gpip"
 	]
 	,author="Carlos Pomares",
 	author_email="cpomaresp@gmail.com",
