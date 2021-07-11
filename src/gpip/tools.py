@@ -25,7 +25,7 @@ def _discoverPackages(packages: list, https: bool = False ,pip: str = None, verb
     for idx, package in enumerate(packages):
 
         package: str
-
+        directory: str = None
         account: str
         repository: str
 
@@ -39,16 +39,25 @@ def _discoverPackages(packages: list, https: bool = False ,pip: str = None, verb
         # Get the owner of the repository.
         account = package.split('/')[1]
 
+        # Directory
+        if len(package.split('@')) > 1:
+            directory = package.split('@')[1]
+
         # Get the basename of the repository url.
         repository = os.path.basename(package)
 
         # Avoid extension .git
         repository = repository.split('.')[0]
         
+        if len(package.split('@')) > 1:
+            directory = package.split('@')[1]
+            repository = repository.split('@')[0]
+
         if not _checkIfExists(repository) or upgrade or force:
             repositories.append(
                 Repository(
                     name=repository
+                    ,directory=directory
                     ,account=Account(
                         name=account
                         ,https=https

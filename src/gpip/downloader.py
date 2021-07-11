@@ -6,7 +6,7 @@ import tempfile
 import os
 
 # Clone a given repository
-def clone_repo(repository: str,github_account: str, token: str = None, output: str = None, https: bool = False):
+def clone_repo(repository: str,github_account: str, token: str = None, output: str = None, https: bool = False, directory: str = None):
 
     if github_account == "":
         raise ValueError("Cannot clone from empty account.")
@@ -36,5 +36,14 @@ def clone_repo(repository: str,github_account: str, token: str = None, output: s
     # Return to original CWD
     os.chdir(original_cwd)
 
+    exists = os.path.exists(os.path.join(output_path,repository))
+    return_path = os.path.join(output_path, repository)
+
+    if directory != None and os.path.exists(os.path.join(output_path,repository,directory)):
+        exists = os.path.exists(os.path.join(output_path,repository,directory))
+        return_path = os.path.join(output_path, repository,directory)
+    else:
+        raise ValueError('the directory %s does not exist' % directory)
+    
     # RETURN IF THE GIT CLONE EXISTS
-    return os.path.exists(output_path + os.sep + repository), (output_path + os.sep + repository)
+    return exists, return_path

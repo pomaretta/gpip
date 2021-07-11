@@ -16,8 +16,9 @@ class Account:
         self.https = https
 
 class Repository:
-    def __init__(self,name: str, account: Account = None, pip = None, upgrade: bool = None, force: bool = None) -> None:
+    def __init__(self,name: str,directory: str = None,account: Account = None, pip = None, upgrade: bool = None, force: bool = None) -> None:
         self.name = name
+        self.directory = directory
         self.account = account
         self.pip = pip
         self.upgrade = upgrade
@@ -42,6 +43,7 @@ class Repository:
                 ,github_account=self.account.name
                 ,token=self.account.token
                 ,https=self.account.https
+                ,directory=self.directory
             )
         except Exception as e:
             raise CloneException(str(e))

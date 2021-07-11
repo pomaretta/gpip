@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         '-g','--get'
-        ,required=False
+        ,required=True
         ,help="Install the given package."
         ,type=str
     )
