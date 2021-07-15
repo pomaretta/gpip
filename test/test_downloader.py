@@ -20,6 +20,8 @@ class DownloaderTest(unittest.TestCase):
         path = self.downloader.download(
             source=source
             ,account=account
+            ,https=True
+            ,debug=True
         )
 
         self.assertNotEqual(None,path)

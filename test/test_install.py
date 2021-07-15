@@ -27,19 +27,24 @@ class InstallTest(unittest.TestCase):
         self.path = self.downloader.download(
             source=self.source,
             account=self.account,
-            https=True
+            https=True,
+            debug=True
         )
         self.assertNotEqual(None,self.path)
     
     def step_2_build(self):
         self.package, self.name = self.builder.build(
-            path=self.path
+            path=self.path,
+            debug=True
         )
     
     def step_3_install(self):
         r = self.installer.install(
             path=self.package,
-            name=self.name
+            name=self.name,
+            force=True,
+            upgrade=True,
+            debug=True
         )
         self.assertTrue(r)
 

@@ -16,14 +16,14 @@ class Installer:
             - name (wheel package)
             - upgrade
             - force
-            - verbose
+            - debug
         """
         
         path: str
         name: str
         upgrade: bool = False
         force: bool = False
-        verbose: bool = False
+        debug: bool = False
         
         if not "path" in kwargs or not isinstance(kwargs["path"],str):
             raise ParameterException("missing path in install request")
@@ -40,12 +40,12 @@ class Installer:
         if "force" in kwargs and isinstance(kwargs["force"],bool):
             force = kwargs["force"]
             
-        if "verbose" in kwargs and isinstance(kwargs["verb"],bool):
-            verbose = kwargs["verbose"]
+        if "debug" in kwargs and isinstance(kwargs["debug"],bool):
+            debug = kwargs["debug"]
             
-        return path, name, upgrade, force, verbose
+        return path, name, upgrade, force, debug
     
-    def __install__(self,path: str, name: str, upgrade: bool, force: bool, verbose: bool) -> bool:
+    def __install__(self,path: str, name: str, upgrade: bool, force: bool, debug: bool) -> bool:
         """
         Install the package and return if the operation was successfull.
         """
@@ -54,9 +54,14 @@ class Installer:
         
         os.chdir(path)
 
-        # TODO: Debug option
+        if debug:
+            print(f"Installing from {path} with {name} package with upgrade={upgrade} and force={force}")
 
         command = f"pip3 install {name} {('','--upgrade')[upgrade]} {('','--force-reinstall')[force]} --quiet > /dev/null 2>&1"
+
+        if debug:
+            command = f"pip3 install {name} {('','--upgrade')[upgrade]} {('','--force-reinstall')[force]}"
+            print("Running with command {}".format(command))
     
         operation = os.system(command)
         
@@ -78,15 +83,15 @@ class Installer:
                 - Enable upgrade install of pip package.
             - force: bool = False
                 - Enable force install of pip package.
-            - verbose: bool = False
-                - Verbose mode.
+            - debug: bool = False
+                - Debug mode.
             
         """
-        path, name, upgrade, force, verbose = self.__params__(**kwargs)
+        path, name, upgrade, force, debug = self.__params__(**kwargs)
         return self.__install__(
             path=path,
             name=name,
             upgrade=upgrade,
             force=force,
-            verbose=verbose,
+            debug=debug
         )

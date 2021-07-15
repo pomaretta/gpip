@@ -13,32 +13,40 @@ class Builder:
         """
         Read the kwargs and extracts the desired data from it:
             - path
-            # - verbose
+            - debug
         """
         
         path: str
-        verbose: bool = False
+        debug: bool = False
         
         if not "path" in kwargs or not isinstance(kwargs["path"],str):
             raise ParameterException("missing path in build request")
         
         path = kwargs["path"]
         
-        if "verbose" in kwargs and not isinstance(kwargs["verbose"],bool):
-            verbose = kwargs["verbose"]
+        if "debug" in kwargs and not isinstance(kwargs["debug"],bool):
+            debug = kwargs["debug"]
         
-        return path, verbose
+        return path, debug
     
-    def __build__(self,path: str, verbose: bool):
+    def __build__(self,path: str, debug: bool):
         """
         Build the project and returns the path of the directory and Build Distributed Package (wheel).
         """
         
         ORIGINAL_CWD = os.getcwd()
         
+        if debug:
+            print(f"Building from {path}")
+        
         os.chdir(path)
         
         command = f"python3 setup.py bdist_wheel > /dev/null 2>&1"
+        
+        if debug:
+            command = f"python3 setup.py bdist_wheel"
+            print("Running with {}".format(command))
+        
         operation = os.system(command)
         
         if operation != 0:
@@ -56,11 +64,11 @@ class Builder:
         a BuildException.
             - path: str
                 - Source path where the repository stands.
-            - verbose: bool
-                - Verbose mode
+            - debug: bool = False
+                - Enable debug mode.
         """
-        path, verbose = self.__params__(**kwargs)
+        path, debug = self.__params__(**kwargs)
         return self.__build__(
             path=path,
-            verbose=verbose
+            debug=debug
         )

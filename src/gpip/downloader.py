@@ -6,6 +6,8 @@
 
 import tempfile
 import os
+
+from logging import Logger, getLogger
 from .exceptions import CloneException, ParameterException
 
 class Downloader:
@@ -21,6 +23,7 @@ class Downloader:
             - https
             - output
             - directory
+            - debug
         """
 
         source: str
@@ -29,6 +32,7 @@ class Downloader:
         https: bool = False
         output: str = None
         directory: str = None
+        debug: bool = False
                 
         if not "source" in kwargs or not isinstance(kwargs["source"],str):
             raise ParameterException("missing source in clone request")
@@ -51,9 +55,12 @@ class Downloader:
         if "directory" in kwargs and isinstance(kwargs["directory"],str):
             directory = kwargs["directory"]
 
-        return source, account, https, token, output, directory
+        if "debug" in kwargs and isinstance(kwargs["debug"],bool):
+            debug = kwargs["debug"]
 
-    def __clone__(self,source: str, account: str, https: bool, token: str, output: str, directory: str) -> str:
+        return source, account, https, token, output, directory, debug
+
+    def __clone__(self,source: str, account: str, https: bool, token: str, output: str, directory: str, debug: bool) -> str:
         """
         Clone the given repository and returns the path of the tmp.
         """
@@ -65,6 +72,9 @@ class Downloader:
 
         if output != None:
             tmp_directory = output
+
+        if debug:
+            print(f"Cloning from {account}/{source} with https={https} and target {tmp_directory}/{directory}")
 
         # Change CWD to tmp directory
         os.chdir(tmp_directory)
@@ -80,6 +90,10 @@ class Downloader:
         
         # Form the clone command
         clone_command = "git clone {} --quiet 2> /dev/null".format(command)
+
+        if debug:
+            clone_command = "git clone {}".format(command)
+            print("Running command {}".format(command))
 
         # Clone the repository
         operation = os.system(clone_command)
@@ -114,15 +128,17 @@ class Downloader:
                 - If this option is set, this will return the path of the specified directory,
                     if cannot be accessed will return an exception else will
                     return the path of the directory.
-        
+            - debug: bool = False
+                - Enable the debug mode and show messages.
         """
         # TODO: Add verbose and dry mode.
-        source, account, https, token, output, directory = self.__params__(**kwargs)
+        source, account, https, token, output, directory, debug = self.__params__(**kwargs)
         return self.__clone__(
             source=source,
             account=account,
             https=https, 
             token=token,
             output=output,
-            directory=directory
+            directory=directory,
+            debug=debug
         )
