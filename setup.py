@@ -22,7 +22,7 @@ def get_version(rel_path: str) -> str:
 # SETUP 					#
 # ========================= #
 
-long_description = read('README.rst')
+long_description = read('README.md')
 
 setup(
 	name="gpip",
