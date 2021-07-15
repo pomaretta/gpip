@@ -6,8 +6,7 @@
 
 import tempfile
 import os
-
-from .exceptions import CloneException
+from .exceptions import CloneException, ParameterException
 
 class Downloader:
     """
@@ -30,12 +29,15 @@ class Downloader:
         https: bool = False
         output: str = None
         directory: str = None
+                
+        if not "source" in kwargs or not isinstance(kwargs["source"],str):
+            raise ParameterException("missing source in clone request")
         
-        if "source" in kwargs and isinstance(kwargs["source"],str):
-            source = kwargs["source"]
+        if not "account" in kwargs or not isinstance(kwargs["account"],str):
+            raise ParameterException("missing account in clone request")
 
-        if "account" in kwargs and isinstance(kwargs["account"],str):
-            account = kwargs["account"]
+        source = kwargs["source"]
+        account = kwargs["account"]
 
         if "https" in kwargs and isinstance(kwargs["https"],bool):
             https = kwargs["https"]
