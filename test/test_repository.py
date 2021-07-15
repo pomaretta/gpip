@@ -19,7 +19,7 @@ class RepositoryTest(unittest.TestCase):
     
     def test_install(self):
         self.repository.install()
-        self.assertTrue(self.repository.exists())
+        self.assertTrue(self.repository.__exists__())
     
 if __name__ == '__main__':
     unittest.main()

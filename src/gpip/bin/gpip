@@ -5,24 +5,16 @@
 # ========================= #
 
 from argparse import ArgumentParser
-
 from gpip.tools import get
 
 def main(args):
-
-    pip = None
-    
-    if args.pip:
-        pip = args.pip
-
     get(
         args.get
-
         ,https=args.https
-        ,pip=pip
-        ,verbose=args.verbose
+        ,token=args.token
         ,upgrade=args.upgrade
         ,force=args.force
+        ,debug=args.debug
     )
 
 if __name__ == "__main__":
@@ -37,17 +29,17 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        '--pip'
-        ,required=False
-        ,help="Establish PIP executable to perform installs."
-        ,type=str
-    )
-
-    parser.add_argument(
         '--https'
         ,required=False
         ,help="Enable HTTPS Mode."
         ,action="store_true"
+    )
+
+    parser.add_argument(
+        '--token'
+        ,required=False
+        ,type=str
+        ,help="Enable HTTPS Mode."
     )
 
     parser.add_argument(
@@ -65,9 +57,9 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        '-v','--verbose'
+        '--debug'
         ,required=False
-        ,help="Enable Verbose Mode."
+        ,help="Enable debug mode."
         ,action="store_true"
     )
 

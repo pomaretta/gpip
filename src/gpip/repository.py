@@ -33,6 +33,7 @@ class Repository:
         source: str
         account: str
         directory: str = None
+        self.package_name: str = None
 
         repository = os.path.basename(url)
 
@@ -115,7 +116,7 @@ class Repository:
         
         return source, account, directory, https, token, output, upgrade, force, debug
 
-    def exists(self):
+    def __exists__(self) -> bool:
         
         source \
         ,account \
@@ -177,12 +178,18 @@ class Repository:
             path=install_path
             ,debug=debug
         )
-        
+
+        if not self.__exists__() and not debug:
+            print(f"Installing {source} from {account} using https={https}{('',f' ({token})')[token != None]}")
+
         # Install
-        return self.installer.install(
-            path=package_path
-            ,name=package_name
-            ,force=force
-            ,upgrade=upgrade
-            ,debug=debug
-        )
+        if force or not self.__exists__():
+            return self.installer.install(
+                path=package_path
+                ,name=package_name
+                ,force=force
+                ,upgrade=upgrade
+                ,debug=debug
+            )
+        
+        return True
