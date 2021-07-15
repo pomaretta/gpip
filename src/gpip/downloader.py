@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # ========================= #
 # DOWNLOADER UTIL           #
 # ========================= #
@@ -5,45 +7,117 @@
 import tempfile
 import os
 
-# Clone a given repository
-def clone_repo(repository: str,github_account: str, token: str = None, output: str = None, https: bool = False, directory: str = None):
+class Downloader:
+    """
+    Performs downloads in case the docker image has to be build from
+    GitHub private or public repository.
+    """
+    def __params__(self,**kwargs):
+        """
+        Read the kwargs and extracts the desired data from it:
+            - source
+            - account
+            - https
+            - output
+            - directory
+        """
 
-    if github_account == "":
-        raise ValueError("Cannot clone from empty account.")
+        source: str
+        account: str
+        token: str = None
+        https: bool = False
+        output: str = None
+        directory: str = None
+        
+        if "source" in kwargs and isinstance(kwargs["source"],str):
+            source = kwargs["source"]
 
-    output_path = tempfile.gettempdir()
-    original_cwd = os.getcwd()
+        if "account" in kwargs and isinstance(kwargs["account"],str):
+            account = kwargs["account"]
 
-    if output != None:
-        output_path = output
+        if "https" in kwargs and isinstance(kwargs["https"],bool):
+            https = kwargs["https"]
 
-    account = "git"
+        if "token" in kwargs and isinstance(kwargs["token"],str):
+            token = kwargs["token"]
 
-    if token != None:
-        account = token
+        if "output" in kwargs and isinstance(kwargs["output"],str):
+            output = kwargs["output"]
 
-    # CHANGE EXECUTION TO OUTPUT PATH
-    os.chdir(output_path)
+        if "directory" in kwargs and isinstance(kwargs["directory"],str):
+            directory = kwargs["directory"]
 
-    command = f"git clone {account}@github.com:{github_account}/{repository} --quiet"
+        return source, account, https, token, output, directory
 
-    if https:
-        command = f"git clone https://{account}@github.com/{github_account}/{repository} --quiet"
+    def __clone__(self,source: str, account: str, https: bool, token: str, output: str, directory: str) -> str:
+        """
+        Clone the given repository and returns the path of the tmp.
+        """
+
+        print(f"Cloning with Source={source}, Account={account}, HTTPS={https}, TOKEN={token}, Output={output}, Directory={directory}")
+
+        ORIGINAL_CWD = os.getcwd()
+
+        # Get the repository to perform clones.
+        tmp_directory = tempfile.gettempdir()
+
+        if output != None:
+            tmp_directory = output
+
+        # Change CWD to tmp directory
+        os.chdir(tmp_directory)
+
+        # Establish the clone method. Default ssh
+        command = f"git@github.com:{account}/{source}"
+
+        if https:
+            command = f"https://www.github.com/{account}/{source}"
+        
+        if https and token != None:
+            command = f"https://{token}@github.com/{account}/{source}"
+        
+        # Form the clone command
+        clone_command = "git clone {} --quiet".format(command)
+
+        # Clone the repository
+        os.system(clone_command)
+
+        # Back to original CWD
+        os.chdir(ORIGINAL_CWD)
+
+        if directory != None:
+            return os.path.join(tmp_directory,source,directory)
     
-    # GET THE REPO IN LOCAL TMP
-    os.system(command)
+        return os.path.join(tmp_directory,source)
+        
 
-    # Return to original CWD
-    os.chdir(original_cwd)
-
-    exists = os.path.exists(os.path.join(output_path,repository))
-    return_path = os.path.join(output_path, repository)
-
-    if directory != None and os.path.exists(os.path.join(output_path,repository,directory)):
-        exists = os.path.exists(os.path.join(output_path,repository,directory))
-        return_path = os.path.join(output_path, repository,directory)
-    else:
-        raise ValueError('the directory %s does not exist' % directory)
-    
-    # RETURN IF THE GIT CLONE EXISTS
-    return exists, return_path
+    def download(self,**kwargs) -> str:
+        """
+        Returns the path of the cloned repository. If a directory is given, this will
+        be set into the CWD and other data will be deleted.
+        For clone the repository the given parameters must be at least:
+            - source: str
+                - Source repository from take the data.
+            - account: str (Default will be the account of the source)
+                - Specify the account (Can be a name or a token)
+            - https: bool = False (Default uses ssh)
+                - If true the repository will be cloned using HTTPS.
+            - token: str = None
+                - The token to clone with.
+            - output: str = None
+                - The output where the data will be written.
+            - directory: str = None
+                - If this option is set, this will return the path of the specified directory,
+                    if cannot be accessed will return an exception else will
+                    return the path of the directory.
+        
+        """
+        source, account, https, token, output, directory = self.__params__(**kwargs)
+        return self.__clone__(
+            source=source,
+            account=account,
+            https=https, 
+            token=token,
+            output=output,
+            directory=directory
+        )
