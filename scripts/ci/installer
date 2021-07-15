@@ -22,7 +22,7 @@ try:
 except KeyError:
     python_version = '.'.join([str(i) for i in sys.version_info[:2]])
 
-run('pip3 install -r requirements.txt')
+# run('pip3 install -r requirements.txt')
 run('pip3 install coverage')
 if os.path.isdir('dist') and os.listdir('dist'):
     shutil.rmtree('dist')
