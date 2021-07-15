@@ -54,12 +54,10 @@ class Downloader:
         Clone the given repository and returns the path of the tmp.
         """
 
-        print(f"Cloning with Source={source}, Account={account}, HTTPS={https}, TOKEN={token}, Output={output}, Directory={directory}")
-
         ORIGINAL_CWD = os.getcwd()
 
         # Get the repository to perform clones.
-        tmp_directory = tempfile.gettempdir()
+        tmp_directory = tempfile.mkdtemp(prefix=f"{source + account}")
 
         if output != None:
             tmp_directory = output
@@ -89,7 +87,6 @@ class Downloader:
             return os.path.join(tmp_directory,source,directory)
     
         return os.path.join(tmp_directory,source)
-        
 
     def download(self,**kwargs) -> str:
         """
@@ -112,6 +109,7 @@ class Downloader:
                     return the path of the directory.
         
         """
+        # TODO: Add verbose and dry mode.
         source, account, https, token, output, directory = self.__params__(**kwargs)
         return self.__clone__(
             source=source,

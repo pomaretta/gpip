@@ -23,6 +23,7 @@ class DownloaderTest(unittest.TestCase):
         )
 
         self.assertNotEqual(None,path)
+        self.assertTrue("carlospomares.es" in path)
 
 if __name__ == '__main__':
     unittest.main()
