@@ -7,6 +7,8 @@
 import tempfile
 import os
 
+from .exceptions import CloneException
+
 class Downloader:
     """
     Performs downloads in case the docker image has to be build from
@@ -75,10 +77,13 @@ class Downloader:
             command = f"https://{token}@github.com/{account}/{source}"
         
         # Form the clone command
-        clone_command = "git clone {} --quiet".format(command)
+        clone_command = "git clone {} --quiet 2> /dev/null".format(command)
 
         # Clone the repository
-        os.system(clone_command)
+        operation = os.system(clone_command)
+        
+        if operation != 0:
+            raise CloneException(f"cannot clone the repository")
 
         # Back to original CWD
         os.chdir(ORIGINAL_CWD)
