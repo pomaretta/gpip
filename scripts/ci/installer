@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+
+# ========================= #
+# PACKAGE INSTALLER         #
+# ========================= #
+
+import os, sys
+import shutil
+from subprocess import check_call
+
+_dname = os.path.dirname
+
+REPO_ROOT = _dname(_dname(_dname(os.path.abspath(__file__))))
+os.chdir(REPO_ROOT)
+
+def run(command):
+    return check_call(command, shell=True)
+
+try:
+    # Has the form "major.minor"
+    python_version = os.environ['PYTHON_VERSION']
+except KeyError:
+    python_version = '.'.join([str(i) for i in sys.version_info[:2]])
+
+# run('pip3 install -r requirements.txt')
+run('pip3 install coverage')
+if os.path.isdir('dist') and os.listdir('dist'):
+    shutil.rmtree('dist')
+run('python3 setup.py bdist_wheel')
+wheel_dist = os.listdir('dist')[0]
+run('pip3 install %s' % (os.path.join('dist', wheel_dist)))

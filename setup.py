@@ -1,14 +1,27 @@
+#!/usr/bin/env python3
+
+# ========================= #
+# GPIP SETUP 				#
+# ========================= #
+
 import setuptools
 
-# Description
+# ========================= #
+# DESCRIPTION 				#
+# ========================= #
+
 with open("README.md", "r") as fh:
     long_description = fh.read()
+
+# ========================= #
+# SETUP 					#
+# ========================= #
 
 setuptools.setup(
 	name='gpip',  
 	version='0.1',
 	scripts=[
-		"src/gpip/gpip"
+		"src/gpip/bin/gpip"
 	]
 	,author="Carlos Pomares",
 	author_email="cpomaresp@gmail.com",
@@ -26,6 +39,5 @@ setuptools.setup(
 	,classifiers=[
 		"Programming Language :: Python :: 3",
 		"License :: OSI Approved :: MIT License",
-		"Operating System :: OS Independent",
 	],
 )
