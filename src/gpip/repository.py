@@ -124,22 +124,11 @@ class Repository:
         ,force \
         ,debug = self.__parse__(**self.kwargs)
         
-        characters = [
-            "-"
-            ,"_"
-            ,"."
-        ]
-
         command = "pip3 show {} > /dev/null 2>&1"
 
-        for char in characters:
-            c = re.sub(f"[-_.]",f"{char}",source)
-            # c = source.replace(r"-|_|.",char)
-            if debug:
-                print("Performing existence test of {}".format(c))
-            if os.system(command.format(c)) == 0:
-                return True
-            
+        if os.system(command.format(source)) == 0:
+            return True
+
         if self.package_name != None and os.system(command.format(self.package_name)) == 0:
             return True
 
@@ -161,7 +150,7 @@ class Repository:
         ,debug = self.__parse__(**self.kwargs)
        
         if self.__exists__() and not force:
-            return
+            return True
         
         install_path = self.downloader.download(
             source=source
