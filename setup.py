@@ -22,7 +22,14 @@ def get_version(rel_path: str) -> str:
 # SETUP 					#
 # ========================= #
 
-long_description = read('README.md')
+# long_description = read('README.md')
+
+long_description = """
+gpip - The Python Package Installer for GitHub
+==============================================
+
+gpip is a package installer for Python. You can use gpip to install packages from GitHub repositories.
+"""
 
 setup(
 	name="gpip",
