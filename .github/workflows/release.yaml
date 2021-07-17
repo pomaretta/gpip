@@ -15,15 +15,12 @@ jobs:
       - name: Check out code into the package directory
         uses: actions/checkout@v2
 
-      - name: Install dependencies 🐱‍🏍
+      - name: Create build package 🐱‍🏍
         run: |
-          python3 scripts/ci/install
-
-      - name: Run tests ✔
-        run: |
-          python3 scripts/ci/run-tests
+          python3 scripts/ci/release
   
       - name: Pypi release ✨
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
