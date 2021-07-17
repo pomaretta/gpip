@@ -37,20 +37,16 @@ class Repository:
 
         repository = os.path.basename(url)
 
-        # Get source
-        # source = re.search(r"[a-zA-Z0-9-.]+[^@]",repository).group(0)
-        
-        # # Get directory if exists
-        # if len(repository.split("@")) > 1:
-        #     directory = repository.split("@")[1]
-        
-        # TODO: Package, Directory, Name
+       
+        # Get the source, example: gpip (Repository name)
         if re.search(r"[a-zA-Z0-9-._]+[^@#]",repository) != None:
             source = re.search(r"[a-zA-Z0-9-._]+[^@#]",repository).group(0)
         
+        # Get the directory if exists.
         if re.search(r"@[a-zA-Z0-9-._]+[^#]",repository) != None:
             directory = re.search(r"@[a-zA-Z0-9-._]+[^#]",repository).group(0).replace('@','')
         
+        # Get the package name if specified.
         if re.search(r"#[a-zA-Z0-9-._]+[^@]",repository) != None:
             self.package_name = re.search(r"#[a-zA-Z0-9-._]+[^@]",repository).group(0).replace('#','')
         
@@ -163,6 +159,9 @@ class Repository:
         ,upgrade \
         ,force \
         ,debug = self.__parse__(**self.kwargs)
+       
+        if self.__exists__() and not force:
+            return
         
         install_path = self.downloader.download(
             source=source
@@ -182,14 +181,10 @@ class Repository:
         if not self.__exists__() and not debug:
             print(f"Installing {source} from {account} using https={https}{('',f' ({token})')[token != None]}")
 
-        # Install
-        if force or not self.__exists__():
-            return self.installer.install(
-                path=package_path
-                ,name=package_name
-                ,force=force
-                ,upgrade=upgrade
-                ,debug=debug
-            )
-        
-        return True
+        return self.installer.install(
+            path=package_path
+            ,name=package_name
+            ,force=force
+            ,upgrade=upgrade
+            ,debug=debug
+        ) 

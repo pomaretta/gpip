@@ -1,0 +1,31 @@
+name: Release Automation 🔥
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+    - 'v*'
+
+jobs:
+  build:
+    name: Package Release
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Check out code into the package directory
+        uses: actions/checkout@v2
+
+      - name: Install dependencies 🐱‍🏍
+        run: |
+          python3 scripts/ci/install
+
+      - name: Run tests ✔
+        run: |
+          python3 scripts/ci/run-tests
+  
+      - name: Pypi release ✨
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          verbose: true
