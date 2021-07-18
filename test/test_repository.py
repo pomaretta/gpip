@@ -11,7 +11,7 @@ class RepositoryTest(unittest.TestCase):
     
     def setUp(self):
         self.repository = Repository(
-            url="github.com/MichaelKim0407/tutorial-pip-package#my-pip-package",
+            url="github.com/MichaelKim0407/tutorial-pip-package#name=my-pip-package",
             https=True,
             force=True,
             debug=True

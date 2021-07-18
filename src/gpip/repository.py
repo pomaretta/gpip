@@ -11,6 +11,7 @@ from .downloader import Downloader
 from .builder import Builder
 from .installer import Installer
 from .exceptions import ParameterException, PackageException
+from typing import Tuple
 
 class Repository:
     
@@ -24,6 +25,35 @@ class Repository:
     def __validate_url__(self,url: str) -> bool:
         return re.compile("(.+@)*([\w\d\.]+)(:[\d]+){0,1}/*").match(url)
 
+    def __package_data__(self,data: str) -> Tuple[str,str,str]:
+
+        available_params = {
+            "name": None
+            ,"branch": None
+            ,"version": None
+        }
+
+        items = data.split(';')
+
+        if len(items) == 0:
+            return available_params["name"], available_params["branch"], available_params["version"]
+
+        for item in items:
+            values = item.split('=')
+
+            if len(values) == 0:
+                raise ParameterException("invalid value")
+
+            identifier = values[0]
+            value = values[1]
+
+            if identifier.lower() not in available_params:
+                raise ParameterException("unkown parameter")
+
+            available_params[identifier] = value
+
+        return available_params["name"], available_params["branch"], available_params["version"]
+
     def __source__(self, url: str):
         
         # Parse url
@@ -33,11 +63,12 @@ class Repository:
         source: str
         account: str
         directory: str = None
+        branch: str = None
+        version: str = None
         self.package_name: str = None
 
         repository = os.path.basename(url)
 
-       
         # Get the source, example: gpip (Repository name)
         if re.search(r"[a-zA-Z0-9-._]+[^@#]",repository) != None:
             source = re.search(r"[a-zA-Z0-9-._]+[^@#]",repository).group(0)
@@ -47,8 +78,8 @@ class Repository:
             directory = re.search(r"@[a-zA-Z0-9-._]+[^#]",repository).group(0).replace('@','')
         
         # Get the package name if specified.
-        if re.search(r"#[a-zA-Z0-9-._]+[^@]",repository) != None:
-            self.package_name = re.search(r"#[a-zA-Z0-9-._]+[^@]",repository).group(0).replace('#','')
+        if re.search(r"#[a-zA-Z0-9-._;]+[^@]",repository) != None:
+            self.package_name, branch, version = self.__package_data__(re.search(r"#[a-zA-Z0-9-._=;]+[^@]",repository).group(0).replace('#',''))
         
         # Get account
         account = re.search(r"/[a-zA-Z0-9]+/", url).group(0).replace('/','')
@@ -62,7 +93,7 @@ class Repository:
         if account == "" and isinstance(account,str):
             account = None
 
-        return source, account, directory
+        return source, account, directory, branch, version
 
     def __parse__(self,**kwargs):
         
@@ -108,15 +139,19 @@ class Repository:
 
         source \
         ,account \
-        ,directory = self.__source__(url)
+        ,directory \
+        ,branch \
+        ,version = self.__source__(url)
         
-        return source, account, directory, https, token, output, upgrade, force, debug
+        return source, account, directory, branch, version, https, token, output, upgrade, force, debug
 
     def __exists__(self) -> bool:
         
         source \
         ,account \
         ,directory \
+        ,branch \
+        ,version \
         ,https \
         ,token \
         ,output \
@@ -142,6 +177,8 @@ class Repository:
         source \
         ,account \
         ,directory \
+        ,branch \
+        ,version \
         ,https \
         ,token \
         ,output \
@@ -156,6 +193,8 @@ class Repository:
             source=source
             ,account=account
             ,directory=directory
+            ,branch=branch
+            ,version=version
             ,https=https
             ,token=token
             ,output=output
@@ -168,7 +207,7 @@ class Repository:
         )
 
         if not self.__exists__() and not debug:
-            print(f"Installing {source} from {account} using https={https}{('',f' ({token})')[token != None]}")
+            print(f"Installing {source} from {account}")
 
         return self.installer.install(
             path=package_path

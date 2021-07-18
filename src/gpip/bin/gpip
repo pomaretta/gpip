@@ -5,7 +5,7 @@
 # ========================= #
 
 from argparse import ArgumentParser
-from gpip.tools import get
+from gpip import get, __version__
 
 # ========================= #
 # GET COMMAND               #
@@ -42,7 +42,7 @@ def install_command(*args,**kwargs):
         print("Empty file.")
         exit(1)
 
-    get(
+    get_command(
         *repositories
         ,**kwargs
     )
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         'action'
-        ,choices=['get', 'install', 'help']
+        ,choices=['get', 'install', 'help', 'version']
         ,help="the action to invoke with %(prog)s"
     )
 
@@ -112,6 +112,10 @@ if __name__ == "__main__":
 
     if "help" in args.action:
         parser.print_help()
+        exit(0)
+
+    if "version" in args.action:
+        print("Currently installed version: {}".format(__version__))
         exit(0)
 
     COMMANDS[args.action](
