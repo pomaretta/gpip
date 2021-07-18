@@ -33,6 +33,9 @@ class Downloader:
         output: str = None
         directory: str = None
         debug: bool = False
+
+        branch: str = None
+        version: str = None
                 
         if not "source" in kwargs or not isinstance(kwargs["source"],str):
             raise ParameterException("missing source in clone request")
@@ -55,17 +58,27 @@ class Downloader:
         if "directory" in kwargs and isinstance(kwargs["directory"],str):
             directory = kwargs["directory"]
 
+        if "branch" in kwargs and isinstance(kwargs["branch"],str):
+            branch = kwargs["branch"]
+
+        if "version" in kwargs and isinstance(kwargs["version"],str):
+            version = kwargs["version"]
+
         if "debug" in kwargs and isinstance(kwargs["debug"],bool):
             debug = kwargs["debug"]
 
-        return source, account, https, token, output, directory, debug
+        return source, account, https, token, output, directory, branch, version, debug
 
-    def __clone__(self,source: str, account: str, https: bool, token: str, output: str, directory: str, debug: bool) -> str:
+    def __clone__(self,source: str, account: str, https: bool, token: str, output: str, directory: str, branch: str, version: str, debug: bool) -> str:
         """
         Clone the given repository and returns the path of the tmp.
         """
 
         ORIGINAL_CWD = os.getcwd()
+
+        # ========================= #
+        # CLONE OUTPUT              #
+        # ========================= #
 
         # Get the repository to perform clones.
         tmp_directory = tempfile.mkdtemp(prefix=f"{source + account}")
@@ -78,6 +91,10 @@ class Downloader:
 
         # Change CWD to tmp directory
         os.chdir(tmp_directory)
+
+        # ========================= #
+        # CLONE COMMAND             #
+        # ========================= #
 
         # Establish the clone method. Default ssh
         command = f"git@github.com:{account}/{source}"
@@ -100,6 +117,31 @@ class Downloader:
         
         if operation != 0:
             raise CloneException(f"cannot clone the repository")
+
+        # ========================= #
+        # BRANCH AND VERSION        #
+        # ========================= #
+
+        os.chdir(os.path.join(tmp_directory,source))
+
+        if directory != None:
+            os.chdir(os.path.join(tmp_directory,source,directory))
+
+        # Change branch
+        branch_change = "git checkout -m {} > /dev/null 2>&1".format(branch)
+        
+        if branch != None and os.system(branch_change) != 0:
+            raise CloneException(f"cannot change branch")
+
+        # Checkout version if exists
+        version_change = "git checkout {} > /dev/null 2>&1".format(version)
+
+        if version != None and os.system(version_change) != 0:
+            raise CloneException(f"cannot change version")
+
+        # ========================= #
+        # CLEAN EXECUTION           #
+        # ========================= #
 
         # Back to original CWD
         os.chdir(ORIGINAL_CWD)
@@ -128,11 +170,14 @@ class Downloader:
                 - If this option is set, this will return the path of the specified directory,
                     if cannot be accessed will return an exception else will
                     return the path of the directory.
+            - branch: str = None
+                - The branch to create build.
+            - version: str = None
+                - The tag checkout.
             - debug: bool = False
                 - Enable the debug mode and show messages.
         """
-        # TODO: Add verbose and dry mode.
-        source, account, https, token, output, directory, debug = self.__params__(**kwargs)
+        source, account, https, token, output, directory, branch, version, debug = self.__params__(**kwargs)
         return self.__clone__(
             source=source,
             account=account,
@@ -140,5 +185,7 @@ class Downloader:
             token=token,
             output=output,
             directory=directory,
+            branch=branch,
+            version=version,
             debug=debug
         )
