@@ -2,7 +2,7 @@
 # TOOLS MODULE              #
 # ========================= #
 
-from .repository import Repository
+from ._internal.repository import Repository
 
 def __discover_repositories__(*args, **kwargs) -> list:
     repositories = list()

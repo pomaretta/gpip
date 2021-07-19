@@ -5,9 +5,9 @@
 # ========================= #
 
 import unittest
-from gpip.downloader import Downloader
-from gpip.installer import Installer
-from gpip.builder import Builder
+from gpip._internal.downloader import Downloader
+from gpip._internal.installer import Installer
+from gpip._internal.builder import Builder
 
 class InstallTest(unittest.TestCase):
     

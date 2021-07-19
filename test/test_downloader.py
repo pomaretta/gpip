@@ -5,7 +5,7 @@
 # ========================= #
 
 import unittest
-from gpip.downloader import Downloader
+from gpip._internal.downloader import Downloader
 
 class DownloaderTest(unittest.TestCase):
 

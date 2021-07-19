@@ -85,7 +85,6 @@ class Installer:
                 - Enable force install of pip package.
             - debug: bool = False
                 - Debug mode.
-            
         """
         path, name, upgrade, force, debug = self.__params__(**kwargs)
         return self.__install__(

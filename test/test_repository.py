@@ -5,7 +5,7 @@
 # ========================= #
 
 import unittest
-from gpip.repository import Repository
+from gpip._internal.repository import Repository
 
 class RepositoryTest(unittest.TestCase):
     
