@@ -29,9 +29,8 @@ if __name__ == '__main__':
     start = time.time()
 
     get(
-        "github.com/MichaelKim0407/tutorial-pip-package#name=my-pip-package"
-        ,https=True
-        ,force=True
+        "github.com/MichaelKim0407/tutorial-pip-package#name=my-pip-package;force=true;https=true"
+        ,debug=True
     )
 
     stop = time.time()

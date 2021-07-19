@@ -27,16 +27,40 @@ class Repository:
 
     def __package_data__(self,data: str) -> Tuple[str,str,str]:
 
-        available_params = {
-            "name": None
-            ,"branch": None
-            ,"version": None
-        }
+        available_params = [
+            "name",
+            "branch",
+            "version",
+            "https",
+            "token",
+            "force",
+            "upgrade"
+        ]
+
+        params = dict()
+
+        for param in available_params:
+            params[param] = None
+
+        # available_params = {
+        #     "name": None
+        #     ,"branch": None
+        #     ,"version": None
+        # }
 
         items = data.split(';')
 
+        # if len(items) == 0:
+        #     return available_params["name"], available_params["branch"], available_params["version"]
+
         if len(items) == 0:
-            return available_params["name"], available_params["branch"], available_params["version"]
+
+            d = list()
+
+            for name, value in params.items():
+                d.append(value)
+
+            return tuple(d)
 
         for item in items:
             values = item.split('=')
@@ -50,9 +74,14 @@ class Repository:
             if identifier.lower() not in available_params:
                 raise ParameterException("unkown parameter")
 
-            available_params[identifier] = value
+            params[identifier] = value
 
-        return available_params["name"], available_params["branch"], available_params["version"]
+        d = list()
+
+        for name, value in params.items():
+            d.append(value)
+
+        return tuple(d)
 
     def __source__(self, url: str):
         
@@ -67,6 +96,11 @@ class Repository:
         version: str = None
         self.package_name: str = None
 
+        repository_https: bool = None
+        repository_token: str = None
+        repository_force: bool = None
+        repository_upgrade: bool = None
+
         repository = os.path.basename(url)
 
         # Get the source, example: gpip (Repository name)
@@ -79,7 +113,7 @@ class Repository:
         
         # Get the package name if specified.
         if re.search(r"#[a-zA-Z0-9-._;]+[^@]",repository) != None:
-            self.package_name, branch, version = self.__package_data__(re.search(r"#[a-zA-Z0-9-._=;]+[^@]",repository).group(0).replace('#',''))
+            self.package_name, branch, version, repository_https, repository_token, repository_force, repository_upgrade = self.__package_data__(re.search(r"#[a-zA-Z0-9-._=;]+[^@]",repository).group(0).replace('#',''))
         
         # Get account
         account = re.search(r"/[a-zA-Z0-9]+/", url).group(0).replace('/','')
@@ -93,7 +127,7 @@ class Repository:
         if account == "" and isinstance(account,str):
             account = None
 
-        return source, account, directory, branch, version
+        return source, account, directory, branch, version, repository_https, repository_token, repository_force, repository_upgrade
 
     def __parse__(self,**kwargs):
         
@@ -137,12 +171,33 @@ class Repository:
         if "debug" in kwargs and isinstance(kwargs["debug"],bool):
             debug = kwargs["debug"]
 
+        repository_https: bool = None
+        repository_token: str = None
+        repository_force: bool = None
+        repository_upgrade: bool = None
+
         source \
         ,account \
         ,directory \
         ,branch \
-        ,version = self.__source__(url)
+        ,version \
+        ,repository_https \
+        ,repository_token \
+        ,repository_force \
+        ,repository_upgrade = self.__source__(url)
         
+        if repository_https != None:
+            https = repository_https.lower() == "true"
+
+        if repository_token != None and isinstance(repository_token,str):
+            token = repository_token
+
+        if repository_force != None:
+            force = repository_force.lower() == "true"
+        
+        if repository_upgrade != None:
+            upgrade = repository_upgrade.lower() == "true"
+
         return source, account, directory, branch, version, https, token, output, upgrade, force, debug
 
     def __exists__(self) -> bool:
