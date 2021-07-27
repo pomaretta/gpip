@@ -86,8 +86,9 @@ class Downloader:
         if output != None:
             tmp_directory = output
 
+        # TODO: Show all data from package.
         if debug:
-            print(f"Cloning from {account}/{source} with https={https} and target {tmp_directory}/{directory}")
+            print(f"Cloning {source} from {account} on output={output}\nUsing https={https} with token={token}\nChange to branch={branch}, version={version}\nEnter into directory={directory}")
 
         # Change CWD to tmp directory
         os.chdir(tmp_directory)

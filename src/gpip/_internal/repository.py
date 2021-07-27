@@ -25,7 +25,7 @@ class Repository:
     def __validate_url__(self,url: str) -> bool:
         return re.compile("(.+@)*([\w\d\.]+)(:[\d]+){0,1}/*").match(url)
 
-    def __package_data__(self,data: str) -> Tuple[str,str,str]:
+    def __package_data__(self,data: str):
 
         available_params = [
             "name",
@@ -107,7 +107,7 @@ class Repository:
         # Get the directory if exists.
         if re.search(r"@[a-zA-Z0-9-._]+[^#]",repository) != None:
             directory = re.search(r"@[a-zA-Z0-9-._]+[^#]",repository).group(0).replace('@','').replace('.',os.sep)
-        
+
         # NOTE: Support to branch with ., replacing with "/", Dont use . for normal branchs, this will replace with /
         # Get the package name if specified.
         if re.search(r"#[a-zA-Z0-9-._=;]+[^@]",repository) != None:
