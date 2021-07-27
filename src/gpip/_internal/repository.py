@@ -25,7 +25,7 @@ class Repository:
     def __validate_url__(self,url: str) -> bool:
         return re.compile("(.+@)*([\w\d\.]+)(:[\d]+){0,1}/*").match(url)
 
-    def __package_data__(self,data: str) -> Tuple[str,str,str]:
+    def __package_data__(self,data: str):
 
         available_params = [
             "name",
@@ -42,16 +42,7 @@ class Repository:
         for param in available_params:
             params[param] = None
 
-        # available_params = {
-        #     "name": None
-        #     ,"branch": None
-        #     ,"version": None
-        # }
-
         items = data.split(';')
-
-        # if len(items) == 0:
-        #     return available_params["name"], available_params["branch"], available_params["version"]
 
         if len(items) == 0:
 
@@ -75,6 +66,11 @@ class Repository:
                 raise ParameterException("unkown parameter")
 
             params[identifier] = value
+
+        # NOTE: Normalize branch with /
+        # NOTE: Idea, add escape characters to replace with them. &01; -> /
+        if params["branch"] != None:
+            params["branch"] = params["branch"].replace('.','/')
 
         d = list()
 
@@ -106,13 +102,15 @@ class Repository:
         # Get the source, example: gpip (Repository name)
         if re.search(r"[a-zA-Z0-9-._]+[^@#]",repository) != None:
             source = re.search(r"[a-zA-Z0-9-._]+[^@#]",repository).group(0)
-        
+
+        # NOTE: Support to different levels of directories, using "." for separate them.        
         # Get the directory if exists.
         if re.search(r"@[a-zA-Z0-9-._]+[^#]",repository) != None:
-            directory = re.search(r"@[a-zA-Z0-9-._]+[^#]",repository).group(0).replace('@','')
-        
+            directory = re.search(r"@[a-zA-Z0-9-._]+[^#]",repository).group(0).replace('@','').replace('.',os.sep)
+
+        # NOTE: Support to branch with ., replacing with "/", Dont use . for normal branchs, this will replace with /
         # Get the package name if specified.
-        if re.search(r"#[a-zA-Z0-9-._;]+[^@]",repository) != None:
+        if re.search(r"#[a-zA-Z0-9-._=;]+[^@]",repository) != None:
             self.package_name, branch, version, repository_https, repository_token, repository_force, repository_upgrade = self.__package_data__(re.search(r"#[a-zA-Z0-9-._=;]+[^@]",repository).group(0).replace('#',''))
         
         # Get account

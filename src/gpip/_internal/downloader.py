@@ -86,8 +86,9 @@ class Downloader:
         if output != None:
             tmp_directory = output
 
+        # TODO: Show all data from package.
         if debug:
-            print(f"Cloning from {account}/{source} with https={https} and target {tmp_directory}/{directory}")
+            print(f"Cloning {source} from {account} on output={output}\nUsing https={https} with token={token}\nChange to branch={branch}, version={version}\nEnter into directory={directory}")
 
         # Change CWD to tmp directory
         os.chdir(tmp_directory)
@@ -124,9 +125,6 @@ class Downloader:
 
         os.chdir(os.path.join(tmp_directory,source))
 
-        if directory != None:
-            os.chdir(os.path.join(tmp_directory,source,directory))
-
         # Change branch
         branch_change = "git checkout -m {} > /dev/null 2>&1".format(branch)
         
@@ -138,6 +136,11 @@ class Downloader:
 
         if version != None and os.system(version_change) != 0:
             raise CloneException(f"cannot change version")
+
+        # NOTE: Issue, trying to enter a directory of a branch or version specified that not exists in main branch.
+        # Get into the directory if specified
+        if directory != None:
+            os.chdir(os.path.join(tmp_directory,source,directory))
 
         # ========================= #
         # CLEAN EXECUTION           #
