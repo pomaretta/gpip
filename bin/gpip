@@ -27,6 +27,8 @@ def read_file(path: str) -> list:
         out = fp.readlines()
         fp.close()
     for x in out:
+        if x.startswith('#'):
+            continue
         repositories.append(x.replace('\n',''))
     return repositories
 

@@ -15,6 +15,8 @@ from typing import Tuple
 
 class Repository:
     
+    PACKAGE_EXPRESSION = "^(?P<source>github\.com/[A-Za-z0-9_.\-]+/[A-Za-z0-9_.\-]+)(?P<path>(/[A-Za-z0-9_.\-]+)*)(?P<name>(:[A-Za-z0-9_.\-]+)*)(?P<version>(==[A-Za-z0-9_.\-]+)*)(?P<branch>(@[A-Za-z0-9_./\-]+)*)( (?P<options>[A-Za-z0-9_.;=\-]+)?)?$"
+
     def __init__(self,**kwargs):
         self.kwargs = kwargs
         self.downloader = Downloader()
@@ -22,15 +24,15 @@ class Repository:
         self.installer = Installer()
         pass
 
-    def __validate_url__(self,url: str) -> bool:
-        return re.compile("(.+@)*([\w\d\.]+)(:[\d]+){0,1}/*").match(url)
+    def __remove_character__(self,string: str,character: str) -> str:
+        return string.replace(character,'')
+
+    def __validate_package__(self,package: str) -> bool:
+        return re.compile(self.PACKAGE_EXPRESSION).match(package)
 
     def __package_data__(self,data: str):
 
         available_params = [
-            "name",
-            "branch",
-            "version",
             "https",
             "token",
             "force",
@@ -67,11 +69,6 @@ class Repository:
 
             params[identifier] = value
 
-        # NOTE: Normalize branch with /
-        # NOTE: Idea, add escape characters to replace with them. &01; -> /
-        if params["branch"] != None:
-            params["branch"] = params["branch"].replace('.','/')
-
         d = list()
 
         for name, value in params.items():
@@ -79,12 +76,51 @@ class Repository:
 
         return tuple(d)
 
-    def __source__(self, url: str):
+    def __package_source__(self,data: str) -> Tuple[str,str]:
         
-        # Parse url
-        # github.com/pomaretta/gpip
-        # github.com/pomaretta/gpip@directory
+        EXPRESSION = "^(?P<source>github\.com)(?P<account>/[A-Za-z0-9_.\-]+)(?P<repository>/[A-Za-z0-9_.\-]+)?$"
 
+        data = re.match(EXPRESSION,data)
+
+        # NOTE: Source of repository (github.com)
+        source = data.group('source')
+
+        # NOTE: Account of repository (name)
+        account = data.group('account')
+        account = self.__remove_character__(account,'/')
+
+        # NOTE: Name of repository (repository)
+        repository = data.group('repository')
+        repository = self.__remove_character__(repository,'/')
+
+        return repository, account 
+
+    def __source__(self, url: str):
+        """
+        Parse the package data and return the corresponding parameters.
+
+        - source
+            - Package name (Name of repository)
+        - account
+            - The account of the repository
+        - directory
+            - Directory to enter if specified
+        - branch
+            - Branch to checkout if specified
+        - version
+            - Version to checkout if specified
+        - package_name
+            - If a package name if specified over source name
+
+        """
+        
+        # NOTE: Parser packages.
+
+        # github.com/account/package
+        # github.com/account/package:package-name==version@branch
+        # github.com/account/package:package-name==version@branch force=true;upgrade=true;https=true;token=TOKEN
+
+        # NOTE: Source basic parameters
         source: str
         account: str
         directory: str = None
@@ -92,29 +128,54 @@ class Repository:
         version: str = None
         self.package_name: str = None
 
+        # NOTE: Override parameters if specified
         repository_https: bool = None
         repository_token: str = None
         repository_force: bool = None
         repository_upgrade: bool = None
 
-        repository = os.path.basename(url)
+        # ========================= #
+        # NEW METHOD OF PARSE       #
+        # ========================= #
 
-        # Get the source, example: gpip (Repository name)
-        if re.search(r"[a-zA-Z0-9-._]+[^@#]",repository) != None:
-            source = re.search(r"[a-zA-Z0-9-._]+[^@#]",repository).group(0)
+        repository = re.match(
+            self.PACKAGE_EXPRESSION,
+            string=url
+        )
 
-        # NOTE: Support to different levels of directories, using "." for separate them.        
-        # Get the directory if exists.
-        if re.search(r"@[a-zA-Z0-9-._]+[^#]",repository) != None:
-            directory = re.search(r"@[a-zA-Z0-9-._]+[^#]",repository).group(0).replace('@','').replace('.',os.sep)
+        # NOTE: Get the source (repository name + account)
+        source, account = self.__package_source__(repository.group('source'))
 
-        # NOTE: Support to branch with ., replacing with "/", Dont use . for normal branchs, this will replace with /
-        # Get the package name if specified.
-        if re.search(r"#[a-zA-Z0-9-._=;]+[^@]",repository) != None:
-            self.package_name, branch, version, repository_https, repository_token, repository_force, repository_upgrade = self.__package_data__(re.search(r"#[a-zA-Z0-9-._=;]+[^@]",repository).group(0).replace('#',''))
-        
-        # Get account
-        account = re.search(r"/[a-zA-Z0-9]+/", url).group(0).replace('/','')
+        # NOTE: Get the path of directory if specified, need to be normalized '/\' with os.sep
+        directory = repository.group('path')
+
+        if directory != None:
+            directory = directory.replace('\\',os.sep).replace('/',os.sep).replace('\\','',1).replace('/','',1)
+
+        # NOTE: Get package name if specified, normalize ':'
+        self.package_name = repository.group('name')
+
+        if self.package_name != None:
+            self.package_name = self.__remove_character__(self.package_name,':')
+    
+        # NOTE: Get version if specified, normalize '=='
+        version = repository.group('version')
+    
+        if version != None:
+            version = self.__remove_character__(version,'==')
+
+        # NOTE: Get branch if specified, normalize '@'
+        branch = repository.group('branch')
+
+        if branch != None:
+            branch = self.__remove_character__(branch,'@')
+    
+        # NOTE: Parse options, trim first space.
+        options = repository.group('options')
+
+        if options != None:
+            options = options.strip() # Remove spaces.
+            repository_https, repository_token, repository_force, repository_upgrade = self.__package_data__(options)
 
         if source == "" and isinstance(account,str):
             source = None
@@ -124,6 +185,15 @@ class Repository:
 
         if account == "" and isinstance(account,str):
             account = None
+
+        if branch == "" and isinstance(branch,str):
+            branch = None
+
+        if version == "" and isinstance(version,str):
+            version = None
+
+        if self.package_name == "" and isinstance(self.package_name,str):
+            self.package_name = None
 
         return source, account, directory, branch, version, repository_https, repository_token, repository_force, repository_upgrade
 
@@ -146,7 +216,7 @@ class Repository:
 
         url = kwargs["url"]
 
-        if not self.__validate_url__(url):
+        if not self.__validate_package__(url):
             raise PackageException("invalid package url")
 
         # ========================= #
@@ -260,7 +330,7 @@ class Repository:
         )
 
         if not self.__exists__() and not debug:
-            print(f"Installing {source} from {account}")
+            print(f"Installing {(source,self.package_name)[self.package_name != None]} from {account}")
 
         return self.installer.install(
             path=package_path
