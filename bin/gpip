@@ -6,6 +6,10 @@
 
 from argparse import ArgumentParser
 from gpip import get, __version__
+from typing import Tuple
+
+import os
+import re
 
 # ========================= #
 # GET COMMAND               #
@@ -21,16 +25,30 @@ def get_command(*args,**kwargs):
 # INSTALL COMMAND           #
 # ========================= #
 
-def read_file(path: str) -> list:
-    repositories = list()
+def is_gpip_package(package: str) -> bool:
+    expression  = "^(?P<source>github\.com/[A-Za-z0-9_.\-]+/[A-Za-z0-9_.\-]+)(?P<path>(/[A-Za-z0-9_.\-]+)*)(?P<name>(:[A-Za-z0-9_.\-]+)*)(?P<version>(==[A-Za-z0-9_.\-]+)*)(?P<branch>(@[A-Za-z0-9_./\-]+)*)( (?P<options>[A-Za-z0-9_.;=\-]+)?)?$"
+    return re.compile(expression).match(package)
+
+def read_file(path: str) -> Tuple[list,list]:
+
+    pip = list()
+    gpip = list()
+
     with open(path,'r') as fp:
         out = fp.readlines()
         fp.close()
+
+    # Read all lines.
     for x in out:
-        if x.startswith('#'):
+        # Avoid commented lines or empty lines.
+        if x.startswith('#') or x == "":
             continue
-        repositories.append(x.replace('\n',''))
-    return repositories
+        if is_gpip_package(x):
+            gpip.append(x.replace('\n',''))
+        else:
+            pip.append(x.replace('\n',''))
+
+    return pip, gpip
 
 def install_command(*args,**kwargs):
     
@@ -38,22 +56,37 @@ def install_command(*args,**kwargs):
         print("Cannot install more than one file.")
         exit(1)
 
-    repositories = read_file(args[0])
+    # Read file and get gpip packages and pip packages
+    pip_packages, gpip_packages = read_file(args[0])
 
-    if len(repositories) == 0:
+    if len(pip_packages) == 0 and len(gpip_packages) == 0:
         print("Empty file.")
         exit(1)
 
-    get_command(
-        *repositories
-        ,**kwargs
-    )
+    # If pip packages install before gpip.
+    if len(pip_packages) > 0:
+        os.system(f"pip3 install {' '.join(pip_packages)} {('> /dev/null 2>&1','')[kwargs['debug']]}")
+
+    if len(gpip_packages) > 0:
+        get_command(
+            *gpip_packages
+            ,**kwargs
+        )
+
+# ========================= #
+# VERSION COMMAND           #
+# ========================= #
+
+def version_command(*args,**kwargs):
+    print("Currently installed version: {}".format(__version__))
+    exit(0)
 
 if __name__ == "__main__":
 
     COMMANDS = {
         "get": get_command,
         "install": install_command,
+        "version": version_command,
     }
 
     parser = ArgumentParser()
@@ -64,7 +97,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         'action'
-        ,choices=['get', 'install', 'help', 'version']
+        ,choices=COMMANDS.keys()
         ,help="the action to invoke with %(prog)s"
     )
 
@@ -111,15 +144,7 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-
-    if "help" in args.action:
-        parser.print_help()
-        exit(0)
-
-    if "version" in args.action:
-        print("Currently installed version: {}".format(__version__))
-        exit(0)
-
+    
     COMMANDS[args.action](
         *args.arguments
         ,https=args.https
