@@ -64,8 +64,9 @@ def install_command(*args,**kwargs):
         exit(1)
 
     # If pip packages install before gpip.
+    options = ('> NUL 2> NUL','> /dev/null 2>&1')[os.name != "nt"]
     if len(pip_packages) > 0:
-        os.system(f"pip3 install {' '.join(pip_packages)} {('> /dev/null 2>&1','')[kwargs['debug']]}")
+        os.system(f"pip3 install {' '.join(pip_packages)} {(options,'')[kwargs['debug']]}")
 
     if len(gpip_packages) > 0:
         get_command(
