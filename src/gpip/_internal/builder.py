@@ -40,11 +40,12 @@ class Builder:
             print(f"Building from {path}")
         
         os.chdir(path)
-        
-        command = f"python3 setup.py bdist_wheel > /dev/null 2>&1"
+
+        os_options = ('> NUL 2> NUL','> /dev/null 2>&1')[os.name != 'nt']
+        command = f"python setup.py bdist_wheel {os_options}"
         
         if debug:
-            command = f"python3 setup.py bdist_wheel"
+            command = f"python setup.py bdist_wheel"
             print("Running with {}".format(command))
         
         operation = os.system(command)

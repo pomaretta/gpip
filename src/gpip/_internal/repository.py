@@ -282,12 +282,13 @@ class Repository:
         ,force \
         ,debug = self.__parse__(**self.kwargs)
         
-        command = "pip3 show {} > /dev/null 2>&1"
+        os_options = ("> NUL 2> NUL","> /dev/null 2>&1")[os.name != "nt"]
+        command = "pip3 show {} {}"
 
-        if os.system(command.format(source)) == 0:
+        if os.system(command.format(source,os_options)) == 0:
             return True
 
-        if self.package_name != None and os.system(command.format(self.package_name)) == 0:
+        if self.package_name != None and os.system(command.format(self.package_name,os_options)) == 0:
             return True
 
         return False
