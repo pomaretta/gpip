@@ -8,3 +8,5 @@ META_COMMANDS = [
     "install",
     "version"
 ]
+
+from .cli import main

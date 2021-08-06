@@ -16,7 +16,8 @@ def main():
 
     parser.add_argument(
         'subcommand'
-        ,choices=META_COMMANDS
+        ,nargs=1
+        ,type=str
         ,help="The command to be executed."
     )
 
