@@ -58,7 +58,7 @@ class Installer:
             print(f"Installing from {path} with {name} package with upgrade={upgrade} and force={force}")
 
         os_options = ('> NUL 2> NUL','> /dev/null 2>&1')[os.name != 'nt']
-        command = f"pip install {name} {('','--upgrade')[upgrade]} {('','--force-reinstall')[force]} --quiet {os_options}"
+        command = f"pip3 install {name} {('','--upgrade')[upgrade]} {('','--force-reinstall')[force]} --quiet {os_options}"
 
         if debug:
             command = f"pip install {name} {('','--upgrade')[upgrade]} {('','--force-reinstall')[force]}"
