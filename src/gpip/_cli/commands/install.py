@@ -57,12 +57,12 @@ def main(
 
     args = parser.parse_args(argv or ())
 
-    if args.file is None:
-        print("File is none.")
+    if len(args.file) > 1:
+        print("Cannot install more than one file.")
         exit(1)
 
     # Read file and get gpip packages and pip packages
-    pip_packages, gpip_packages = read_file(args.file)
+    pip_packages, gpip_packages = read_file(args.file[0])
 
     if len(pip_packages) == 0 and len(gpip_packages) == 0:
         print("Empty file.")
