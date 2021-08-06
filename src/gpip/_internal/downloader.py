@@ -74,6 +74,7 @@ class Downloader:
         Clone the given repository and returns the path of the tmp.
         """
 
+        os_options = ('> NUL 2> NUL','> /dev/null 2>&1')[os.name != 'nt']
         ORIGINAL_CWD = os.getcwd()
 
         # ========================= #
@@ -107,7 +108,7 @@ class Downloader:
             command = f"https://{token}@github.com/{account}/{source}"
         
         # Form the clone command
-        clone_command = "git clone {} --quiet 2> /dev/null".format(command)
+        clone_command = "git clone {} --quiet {}".format(command,os_options)
 
         if debug:
             clone_command = "git clone {}".format(command)
@@ -126,13 +127,13 @@ class Downloader:
         os.chdir(os.path.join(tmp_directory,source))
 
         # Change branch
-        branch_change = "git checkout -m {} > /dev/null 2>&1".format(branch)
+        branch_change = "git checkout -m {} {}".format(branch,os_options)
         
         if branch != None and os.system(branch_change) != 0:
             raise CloneException(f"cannot change branch")
 
         # Checkout version if exists
-        version_change = "git checkout {} > /dev/null 2>&1".format(version)
+        version_change = "git checkout {} {}".format(version,os_options)
 
         if version != None and os.system(version_change) != 0:
             raise CloneException(f"cannot change version")
