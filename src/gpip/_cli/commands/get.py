@@ -29,6 +29,10 @@ def main(
 
     args = parser.parse_args(argv or ())
 
+    if len(args.packages) == 0:
+        parser.print_help()
+        exit(1)
+
     get(
         *args.packages,
         **kwargs
