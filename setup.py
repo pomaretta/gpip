@@ -58,7 +58,8 @@ setup(
 		exclude=["test","scripts"],
 	),
 	scripts=[
-		"bin/gpip"
+		"bin/gpip",
+		"bin/gpip.cmd"
 	],	
 	install_requires=[
 		"setuptools"
