@@ -22,25 +22,19 @@ def get_version(rel_path: str) -> str:
 # SETUP 					#
 # ========================= #
 
-# long_description = read('README.md')
-
-long_description = """
-gpip - The Python Package Installer for GitHub
-==============================================
-
-gpip is a package installer for Python. You can use gpip to install packages from GitHub repositories.
-"""
+long_description = read('README.rst')
 
 setup(
 	name="gpip",
 	version=get_version("src/gpip/__init__.py"),
-	description="Tool for installing Python packages from GitHub Private/Public repository.",
+	description="Tool for installing Python packages from GitHub repositories.",
 	long_description=long_description,
 	license="MIT",
 	classifiers=[
 		"Intended Audience :: Developers",
 		"License :: OSI Approved :: MIT License",
 		"Topic :: Software Development :: Build Tools",
+		'Topic :: Software Development',
 		"Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3 :: Only",
@@ -48,6 +42,7 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+		'Operating System :: OS Independent',
 	],
 	url="https://github.com/pomaretta/gpip",
 	author="Carlos Pomares",
