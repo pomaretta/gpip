@@ -12,8 +12,11 @@ from .exceptions import CloneException, ParameterException
 
 class Downloader:
     """
-    Performs downloads in case the docker image has to be build from
-    GitHub private or public repository.
+    The downloader is the class that has the functionality to download the repository,
+    this will download the necesary files and will perform some directory operations.
+    Like enter some specified directory or checkout to some branch or version.
+    
+    Is the responsible for manage the repository using git functionalities.
     """
     def __params__(self,**kwargs):
         """
