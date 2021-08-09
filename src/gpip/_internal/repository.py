@@ -14,23 +14,87 @@ from .exceptions import ParameterException, PackageException
 from typing import Tuple
 
 class Repository:
-    
+    """
+    A repository, the object that represents a package on gpip.
+    This object is used to extract the different parameters that uses
+    gpip, where you can install it using the "install" method. That will
+    download, build and install on pip the package that represents the object.
+
+    The only required information of the repository class if to given a "url" kwarg.
+
+    - url: str (Required)
+        - The url of the package is the one that using the gpip syntax can be
+        parsed and extract the information that gpip needs to work.
+
+    The repository object uses this information:
+
+    - source: str (parsed)
+        - The source of the repository. (github repository name)
+    - account: str (parsed)
+        - The account of the repository. (github repository owner)
+    - directory: str (parsed) (optional)
+        - The directory to look for files in.
+    - branch: str (parsed) (optional)
+        - The branch of repository. (github repository branch)
+    - version: str (parsed) (optional)
+        - The version to checkout after cloning the repository. Uses Git Tags
+    - https: bool = False (parsed) (non-parsed) (optional) (kwargs)
+        - Specify to use HTTPS instead of SSH (Default) to clone the repository.
+    - token: str = None (parsed) (non-parsed) (optional) (kwargs)
+        - Specify to use a token when using HTTPS. (GitHub Account Token)
+    - output: str = None (disabled)
+        - Specify a output path to place the repository files in. (Clone stage)
+    - upgrade: bool = False (parsed) (non-parsed) (optional) (kwargs)
+        - Specify to use upgrade option on pip install stage.
+    - force: bool = False (parsed) (non-parsed) (optional) (kwargs)
+        - Specify to use force option on pip install stage.
+    - debug: bool = False (optional) (kwargs)
+        - Specify to show information on different stages of gpip.
+
+    """
+
+    # The package syntax
     PACKAGE_EXPRESSION = "^(?P<source>github\.com/[A-Za-z0-9_.\-]+/[A-Za-z0-9_.\-]+)(?P<path>(/[A-Za-z0-9_.\-]+)*)(?P<name>(:[A-Za-z0-9_.\-]+)*)(?P<version>(==[A-Za-z0-9_.\-]+)*)(?P<branch>(@[A-Za-z0-9_./\-]+)*)( (?P<options>[A-Za-z0-9_.;=\-]+)?)?$"
 
     def __init__(self,**kwargs):
-        self.kwargs = kwargs
+        
+        # Initialize the stages.
+        self.installer = Installer()
         self.downloader = Downloader()
         self.builder = Builder()
-        self.installer = Installer()
-        pass
+
+        # Parse arguments that will be passed with kwargs.
+        self.source \
+        ,self.account \
+        ,self.directory \
+        ,self.branch \
+        ,self.version \
+        ,self.https \
+        ,self.token \
+        ,self.output \
+        ,self.upgrade \
+        ,self.force \
+        ,self.debug = self.__parse__(**kwargs)
 
     def __remove_character__(self,string: str,character: str) -> str:
+        """
+        Remove the given character from the given string and return it.
+        """
         return string.replace(character,'')
 
     def __validate_package__(self,package: str) -> bool:
+        """
+        Return if the given package declaration is a gpip package.
+        """
         return re.compile(self.PACKAGE_EXPRESSION).match(package)
 
     def __package_data__(self,data: str):
+        """
+        Parse the "option" field on the gpip syntax, with key-value arguments.
+
+        This method allow to extract the "https", "token", "force", "upgrade" options
+        from the package "options" field if present.
+        """
 
         available_params = [
             "https",
@@ -47,37 +111,34 @@ class Repository:
         items = data.split(';')
 
         if len(items) == 0:
-
             d = list()
-
-            for name, value in params.items():
+            for _, value in params.items():
                 d.append(value)
-
             return tuple(d)
 
         for item in items:
             values = item.split('=')
-
             if len(values) == 0:
                 raise ParameterException("invalid value")
-
             identifier = values[0]
             value = values[1]
-
+            # Allow other kwargs but ignore them.
             if identifier.lower() not in available_params:
-                raise ParameterException("unkown parameter")
-
+                # raise ParameterException("unkown parameter")
+                continue
             params[identifier] = value
 
         d = list()
-
-        for name, value in params.items():
+        for _, value in params.items():
             d.append(value)
 
         return tuple(d)
 
     def __package_source__(self,data: str) -> Tuple[str,str]:
-        
+        """
+        Extract the repository name and the account from the "source" field on gpip package.
+        """
+
         EXPRESSION = "^(?P<source>github\.com)(?P<account>/[A-Za-z0-9_.\-]+)(?P<repository>/[A-Za-z0-9_.\-]+)?$"
 
         data = re.match(EXPRESSION,data)
@@ -198,6 +259,9 @@ class Repository:
         return source, account, directory, branch, version, repository_https, repository_token, repository_force, repository_upgrade
 
     def __parse__(self,**kwargs):
+        """
+        Extract the repository information from the given "url" of kwarg.
+        """
         
         url: str
         https: bool = False
@@ -269,23 +333,14 @@ class Repository:
         return source, account, directory, branch, version, https, token, output, upgrade, force, debug
 
     def __exists__(self) -> bool:
-        
-        source \
-        ,account \
-        ,directory \
-        ,branch \
-        ,version \
-        ,https \
-        ,token \
-        ,output \
-        ,upgrade \
-        ,force \
-        ,debug = self.__parse__(**self.kwargs)
+        """
+        Return if a package exists in the pip installation.
+        """
         
         os_options = ("> NUL 2> NUL","> /dev/null 2>&1")[os.name != "nt"]
         command = "pip3 show {} {}"
 
-        if os.system(command.format(source,os_options)) == 0:
+        if os.system(command.format(self.source,os_options)) == 0:
             return True
 
         if self.package_name != None and os.system(command.format(self.package_name,os_options)) == 0:
@@ -295,48 +350,51 @@ class Repository:
 
     def install(self):
         """
-        Install the repository package.
+        Install the package of the specified repository.
+
+        This will pass from 3 different stages:
+
+        - Download stage (Clone)
+            - This will download the repository to the specified output. (Default tmp)
+        - Build stage
+            - This will build the python package using "pip3 setup.py".
+        - Install stage
+            - This will install the python package using the "pip" executable on the environment.
+            If using virtualenv on the moment of install will be installed there.
+
         """
         
-        source \
-        ,account \
-        ,directory \
-        ,branch \
-        ,version \
-        ,https \
-        ,token \
-        ,output \
-        ,upgrade \
-        ,force \
-        ,debug = self.__parse__(**self.kwargs)
-       
-        if self.__exists__() and not force:
+        # Check if the package is installed, if it is, will be skiped unless force option is present.
+        if self.__exists__() and not self.force:
             return True
         
+        # Download the repository and return the installation path.
         install_path = self.downloader.download(
-            source=source
-            ,account=account
-            ,directory=directory
-            ,branch=branch
-            ,version=version
-            ,https=https
-            ,token=token
-            ,output=output
-            ,debug=debug
+            source=self.source
+            ,account=self.account
+            ,directory=self.directory
+            ,branch=self.branch
+            ,version=self.version
+            ,https=self.https
+            ,token=self.token
+            ,output=self.output
+            ,debug=self.debug
         )
         
+        # Build the package from the given install path. And returns the package path and name.
         package_path, package_name = self.builder.build(
             path=install_path
-            ,debug=debug
+            ,debug=self.debug
         )
 
-        if not self.__exists__() and not debug:
-            print(f"Installing {(source,self.package_name)[self.package_name != None]} from {account}")
+        # After download and build show installation simple information always.
+        if not self.__exists__() or self.force:
+            print(f"Installing {(self.source,self.package_name)[self.package_name != None]} from {self.account}")
 
         return self.installer.install(
             path=package_path
             ,name=package_name
-            ,force=force
-            ,upgrade=upgrade
-            ,debug=debug
+            ,force=self.force
+            ,upgrade=self.upgrade
+            ,debug=self.debug
         ) 
