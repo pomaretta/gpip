@@ -4,8 +4,6 @@ WORKDIR /app
 
 COPY . .
 
-RUN python3 /app/scripts/ci/installer
-
 RUN /app/scripts/ci/installer
 
 CMD [ "/app/scripts/ci/run-tests" ]

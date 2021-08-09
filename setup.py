@@ -27,23 +27,9 @@ long_description = read('README.rst')
 setup(
 	name="gpip",
 	version=get_version("src/gpip/__init__.py"),
-	description="Tool for installing Python packages from GitHub repositories.",
+	description="Utility tool for installing Python packages from GitHub repositories.",
 	long_description=long_description,
 	license="MIT",
-	classifiers=[
-		"Intended Audience :: Developers",
-		"License :: OSI Approved :: MIT License",
-		"Topic :: Software Development :: Build Tools",
-		'Topic :: Software Development',
-		"Programming Language :: Python",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-		'Operating System :: OS Independent',
-	],
 	url="https://github.com/pomaretta/gpip",
 	author="Carlos Pomares",
 	author_email="cpomaresp@gmail.com",
@@ -55,7 +41,21 @@ setup(
 	scripts=[
 		"bin/gpip",
 		"bin/gpip.cmd"
-	],	
+	],
+	classifiers=[
+		"Intended Audience :: Developers",
+		"License :: OSI Approved :: MIT License",
+		"Topic :: Software Development :: Build Tools",
+		'Topic :: Software Development',
+		"Programming Language :: Python",
+		"Programming Language :: Python :: 3",
+		"Programming Language :: Python :: 3 :: Only",
+		"Programming Language :: Python :: 3.6",
+		"Programming Language :: Python :: 3.7",
+		"Programming Language :: Python :: 3.8",
+		"Programming Language :: Python :: 3.9",
+		'Operating System :: OS Independent',
+	],
 	install_requires=[
 		"setuptools"
 		,"pip"
