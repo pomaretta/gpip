@@ -51,11 +51,13 @@ We have a syntax for specify the packages like Go has. We manage to allow some o
     "github.com/<ACCOUNT>/<REPOSITORY>/path/to/package" # If package is inside subdirectories
     "github.com/<ACCOUNT>/<REPOSITORY>@<BRANCH>" # If the package is on other branch
     "github.com/<ACCOUNT>/<REPOSITORY> force=true;https=true" # If you like to declare options in the package declaration
+    "github.com/<ACCOUNT>/<REPOSITORY>/path/to/package:<PACKAGE-NAME>" # You can use the different options in the same declaration.
 
 * The **account** is the name of the GitHub user.
 * The **repository** the name of the repository.
 * The **path** the path where the package is in, support subdirectories, with '/'. e.g: **path/to/package**
 * The **name of package**, as default gpip will take the name of the repository as the package name, but can be defined with ':' after repository name or with path included. e.g: **repo/path:other-name**
+* The **version**, you can specify a version to checkout, uses Git Tags for work.
 * The **branch** specify if the code has to move to other branch before taking action to enter directories, this can be used to test packages that are not in the main branch, or for structure purposes.
 * The **options** are the options that the package can handle like: https, token, upgrade, force. Actions that interacts with **pip** utility and **git**. They are separated by ';' and assign values with '=' character. Will be in the end of the line between a space. e.g: **https=true;force=true**
 
