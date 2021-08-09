@@ -8,7 +8,13 @@ import os
 from .exceptions import BuildException, ParameterException
 
 class Builder:
-    
+    """
+    A builder represents a single instance of the build stage, with a given path will
+    execute the "python3 setup.py bdist_wheel" command and this will generate a wheel 
+    file that will be returned to the manager. This will return the path and name of the package
+    wheel file.
+    """
+
     def __params__(self,**kwargs):
         """
         Read the kwargs and extracts the desired data from it:

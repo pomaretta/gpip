@@ -8,7 +8,11 @@ import os
 from .exceptions import InstallException, ParameterException
 
 class Installer:
- 
+    """
+    This class is the responsible of the installation of the package, this will accept a given path and name
+    of package wheel file and will install it to the environment pip executable.    
+    """
+
     def __params__(self,**kwargs):
         """
         Read the kwargs and extracts the desired data from it:
