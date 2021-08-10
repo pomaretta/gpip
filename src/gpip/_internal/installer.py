@@ -28,6 +28,7 @@ class Installer:
         upgrade: bool = False
         force: bool = False
         debug: bool = False
+        user: bool = False
         
         if not "path" in kwargs or not isinstance(kwargs["path"],str):
             raise ParameterException("missing path in install request")
@@ -46,10 +47,13 @@ class Installer:
             
         if "debug" in kwargs and isinstance(kwargs["debug"],bool):
             debug = kwargs["debug"]
+
+        if "user" in kwargs and isinstance(kwargs["user"],bool):
+            user = kwargs["user"]
             
-        return path, name, upgrade, force, debug
+        return path, name, upgrade, force, user, debug
     
-    def __install__(self,path: str, name: str, upgrade: bool, force: bool, debug: bool) -> bool:
+    def __install__(self,path: str, name: str, upgrade: bool, force: bool, user: bool, debug: bool) -> bool:
         """
         Install the package and return if the operation was successfull.
         """
@@ -59,13 +63,13 @@ class Installer:
         os.chdir(path)
 
         if debug:
-            print(f"Installing from {path} with {name} package with upgrade={upgrade} and force={force}")
+            print(f"Installing from {path} with {name} package with upgrade={upgrade}, force={force} and user={user}")
 
         os_options = ('> NUL 2> NUL','> /dev/null 2>&1')[os.name != 'nt']
-        command = f"pip3 install {name} {('','--upgrade')[upgrade]} {('','--force-reinstall')[force]} --quiet {os_options}"
+        command = f"pip3 install {name} {('','--upgrade')[upgrade]} {('','--force-reinstall')[force]} {('','--user')[user]} --quiet {os_options}"
 
         if debug:
-            command = f"pip install {name} {('','--upgrade')[upgrade]} {('','--force-reinstall')[force]}"
+            command = f"pip install {name} {('','--upgrade')[upgrade]} {('','--force-reinstall')[force]} {('','--user')[user]}"
             print("Running with command {}".format(command))
     
         operation = os.system(command)
@@ -88,14 +92,17 @@ class Installer:
                 - Enable upgrade install of pip package.
             - force: bool = False
                 - Enable force install of pip package.
+            - user: bool = False
+                - Use --user flag with pip.
             - debug: bool = False
                 - Debug mode.
         """
-        path, name, upgrade, force, debug = self.__params__(**kwargs)
+        path, name, upgrade, force, user, debug = self.__params__(**kwargs)
         return self.__install__(
             path=path,
             name=name,
             upgrade=upgrade,
             force=force,
+            user=user,
             debug=debug
         )

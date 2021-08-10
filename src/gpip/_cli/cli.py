@@ -61,6 +61,13 @@ def main():
     )
 
     parser.add_argument(
+        '--user'
+        ,required=False
+        ,action="store_true"
+        ,help="Install packages on user pip site repository."
+    )
+
+    parser.add_argument(
         '--debug'
         ,required=False
         ,action="store_true"
@@ -83,6 +90,7 @@ def main():
         ,token=args.token
         ,upgrade=args.upgrade
         ,force=args.force
+        ,user=args.user
         ,debug=args.debug
     ):
         parser.print_help()
