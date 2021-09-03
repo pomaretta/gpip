@@ -348,17 +348,17 @@ class Repository:
         """
         Return if a package exists in the pip installation.
         """
-        
+
         os_options = ("> NUL 2> NUL","> /dev/null 2>&1")[os.name != "nt"]
         command = "pip3 show {} {}"
 
-        if os.system(command.format(self.source,os_options)) == 0:
-            return True
+        name = self.source
 
-        if self.package_name != None and os.system(command.format(self.package_name,os_options)) == 0:
-            return True
+        if self.package_name != None:
+            name = self.package_name
 
-        return False
+        return os.system(command.format(name,os_options)) == 0
+        
 
     def install(self):
         """
