@@ -74,6 +74,7 @@ class Repository:
         ,self.output \
         ,self.upgrade \
         ,self.force \
+        ,self.user \
         ,self.debug = self.__parse__(**kwargs)
 
     def __remove_character__(self,string: str,character: str) -> str:
@@ -100,7 +101,8 @@ class Repository:
             "https",
             "token",
             "force",
-            "upgrade"
+            "upgrade",
+            "user"
         ]
 
         params = dict()
@@ -193,6 +195,7 @@ class Repository:
         repository_https: bool = None
         repository_token: str = None
         repository_force: bool = None
+        repository_user: bool = None
         repository_upgrade: bool = None
 
         # ========================= #
@@ -236,7 +239,7 @@ class Repository:
 
         if options != None:
             options = options.strip() # Remove spaces.
-            repository_https, repository_token, repository_force, repository_upgrade = self.__package_data__(options)
+            repository_https, repository_token, repository_force, repository_user, repository_upgrade = self.__package_data__(options)
 
         if source == "" and isinstance(account,str):
             source = None
@@ -256,7 +259,7 @@ class Repository:
         if self.package_name == "" and isinstance(self.package_name,str):
             self.package_name = None
 
-        return source, account, directory, branch, version, repository_https, repository_token, repository_force, repository_upgrade
+        return source, account, directory, branch, version, repository_https, repository_token, repository_force, repository_upgrade, repository_user
 
     def __parse__(self,**kwargs):
         """
@@ -269,6 +272,7 @@ class Repository:
         output: str = None
         upgrade: bool = None
         force: bool = None
+        user: bool = False
         debug: bool = False
         
         # ========================= #
@@ -300,6 +304,9 @@ class Repository:
         if "force" in kwargs and isinstance(kwargs["force"],bool):
             force = kwargs["force"]
             
+        if "user" in kwargs and isinstance(kwargs["user"],bool):
+            user = kwargs["user"]
+
         if "debug" in kwargs and isinstance(kwargs["debug"],bool):
             debug = kwargs["debug"]
 
@@ -307,6 +314,7 @@ class Repository:
         repository_token: str = None
         repository_force: bool = None
         repository_upgrade: bool = None
+        repository_user: bool = None
 
         source \
         ,account \
@@ -316,7 +324,8 @@ class Repository:
         ,repository_https \
         ,repository_token \
         ,repository_force \
-        ,repository_upgrade = self.__source__(url)
+        ,repository_upgrade \
+        ,repository_user = self.__source__(url)
         
         if repository_https != None:
             https = repository_https.lower() == "true"
@@ -330,23 +339,26 @@ class Repository:
         if repository_upgrade != None:
             upgrade = repository_upgrade.lower() == "true"
 
-        return source, account, directory, branch, version, https, token, output, upgrade, force, debug
+        if repository_user != None:
+            user = repository_user.lower() == "true"
+
+        return source, account, directory, branch, version, https, token, output, upgrade, force, user, debug
 
     def __exists__(self) -> bool:
         """
         Return if a package exists in the pip installation.
         """
-        
+
         os_options = ("> NUL 2> NUL","> /dev/null 2>&1")[os.name != "nt"]
         command = "pip3 show {} {}"
 
-        if os.system(command.format(self.source,os_options)) == 0:
-            return True
+        name = self.source
 
-        if self.package_name != None and os.system(command.format(self.package_name,os_options)) == 0:
-            return True
+        if self.package_name != None:
+            name = self.package_name
 
-        return False
+        return os.system(command.format(name,os_options)) == 0
+        
 
     def install(self):
         """
@@ -396,5 +408,6 @@ class Repository:
             ,name=package_name
             ,force=self.force
             ,upgrade=self.upgrade
+            ,user=self.user
             ,debug=self.debug
         ) 
