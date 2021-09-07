@@ -70,10 +70,15 @@ def main(
 
     # If pip packages install before gpip.
     options = ('> NUL 2> NUL','> /dev/null 2>&1')[os.name != "nt"]
+    
     target = kwargs['target']
+    target_enabled = target != None
+
+    if target_enabled:
+        target = os.path.abspath(target)
 
     if len(pip_packages) > 0:
-        os.system(f"pip3 install {' '.join(pip_packages)} {(options,'')[kwargs['debug']]} {('',f'--target={os.path.abspath(target)}')[target != None]}")
+        os.system(f"pip3 install {' '.join(pip_packages)} {(options,'')[kwargs['debug']]} {('',f'--target={target}')[target_enabled]}")
 
     if len(gpip_packages) > 0:
         get(
