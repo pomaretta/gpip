@@ -6,6 +6,6 @@ from individuals or organization that cannot be made public. And have a way to o
 copy-pasting through repositories.
 """
 
-__version__ = "0.4.6-preview"
+__version__ = "0.4.6"
 
 from .tools import get
