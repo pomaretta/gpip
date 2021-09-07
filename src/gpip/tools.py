@@ -54,6 +54,8 @@ def get(*args, **kwargs):
         - Specify to upgrade package, feature of pip.
     - debug: bool = False
         - Enable loggin and show some execution information.
+    - target: str = None
+        - Redirect output dependencies and install in the given path. (Relative path support)
     - output: str = None
         - Specify the location to store cloned repositories from GitHub, default using
         temp directory.
