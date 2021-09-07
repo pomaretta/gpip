@@ -44,6 +44,8 @@ class Repository:
         - Specify to use a token when using HTTPS. (GitHub Account Token)
     - output: str = None (disabled)
         - Specify a output path to place the repository files in. (Clone stage)
+    - target: str = None (optional) (non-parsed) (kwargs)
+        - Specify where to plut package sources. (Install stage)
     - upgrade: bool = False (parsed) (non-parsed) (optional) (kwargs)
         - Specify to use upgrade option on pip install stage.
     - force: bool = False (parsed) (non-parsed) (optional) (kwargs)
@@ -72,6 +74,7 @@ class Repository:
         ,self.https \
         ,self.token \
         ,self.output \
+        ,self.target \
         ,self.upgrade \
         ,self.force \
         ,self.user \
@@ -270,6 +273,7 @@ class Repository:
         https: bool = False
         token: str = None
         output: str = None
+        target: str = None
         upgrade: bool = None
         force: bool = None
         user: bool = False
@@ -297,6 +301,10 @@ class Repository:
             
         if "output" in kwargs and isinstance(kwargs["output"],str):
             output = kwargs["output"]
+
+        if "target" in kwargs and isinstance(kwargs["target"],str):
+            target = kwargs["target"]
+            target = os.path.abspath(target)
             
         if "upgrade" in kwargs and isinstance(kwargs["upgrade"],bool):
             upgrade = kwargs["upgrade"]
@@ -342,7 +350,7 @@ class Repository:
         if repository_user != None:
             user = repository_user.lower() == "true"
 
-        return source, account, directory, branch, version, https, token, output, upgrade, force, user, debug
+        return source, account, directory, branch, version, https, token, output, target, upgrade, force, user, debug
 
     def __exists__(self) -> bool:
         """
@@ -358,7 +366,6 @@ class Repository:
             name = self.package_name
 
         return os.system(command.format(name,os_options)) == 0
-        
 
     def install(self):
         """
@@ -409,5 +416,6 @@ class Repository:
             ,force=self.force
             ,upgrade=self.upgrade
             ,user=self.user
+            ,target=self.target
             ,debug=self.debug
         ) 

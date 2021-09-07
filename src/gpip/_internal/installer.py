@@ -25,6 +25,7 @@ class Installer:
         
         path: str
         name: str
+        target: str = None
         upgrade: bool = False
         force: bool = False
         debug: bool = False
@@ -50,10 +51,13 @@ class Installer:
 
         if "user" in kwargs and isinstance(kwargs["user"],bool):
             user = kwargs["user"]
+
+        if "target" in kwargs and isinstance(kwargs["target"],str):
+            target = kwargs["target"]
             
-        return path, name, upgrade, force, user, debug
+        return path, name, upgrade, force, user, target, debug
     
-    def __install__(self,path: str, name: str, upgrade: bool, force: bool, user: bool, debug: bool) -> bool:
+    def __install__(self,path: str, name: str, upgrade: bool, force: bool, user: bool, target: str, debug: bool) -> bool:
         """
         Install the package and return if the operation was successfull.
         """
@@ -63,13 +67,12 @@ class Installer:
         os.chdir(path)
 
         if debug:
-            print(f"Installing from {path} with {name} package with upgrade={upgrade}, force={force} and user={user}")
+            print(f"Installing from {path} with {name} package with upgrade={upgrade}, force={force} ,user={user} and target={target}")
 
         os_options = ('> NUL 2> NUL','> /dev/null 2>&1')[os.name != 'nt']
-        command = f"pip3 install {name} {('','--upgrade')[upgrade]} {('','--force-reinstall')[force]} {('','--user')[user]} --quiet {os_options}"
+        command = f"pip3 install {name} {('',f'--target {target}')[target != None]} {('','--upgrade')[upgrade]} {('','--force-reinstall')[force]} {('','--user')[user]} {(f'--quiet {os_options}','')[debug]}"
 
         if debug:
-            command = f"pip install {name} {('','--upgrade')[upgrade]} {('','--force-reinstall')[force]} {('','--user')[user]}"
             print("Running with command {}".format(command))
     
         operation = os.system(command)
@@ -97,12 +100,13 @@ class Installer:
             - debug: bool = False
                 - Debug mode.
         """
-        path, name, upgrade, force, user, debug = self.__params__(**kwargs)
+        path, name, upgrade, force, user, target, debug = self.__params__(**kwargs)
         return self.__install__(
             path=path,
             name=name,
             upgrade=upgrade,
             force=force,
             user=user,
+            target=target,
             debug=debug
         )

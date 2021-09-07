@@ -68,6 +68,13 @@ def main():
     )
 
     parser.add_argument(
+        '--target'
+        ,required=False
+        ,type=str
+        ,help="Specify where to place dependencies."
+    )
+
+    parser.add_argument(
         '--debug'
         ,required=False
         ,action="store_true"
@@ -91,6 +98,7 @@ def main():
         ,upgrade=args.upgrade
         ,force=args.force
         ,user=args.user
+        ,target=args.target
         ,debug=args.debug
     ):
         parser.print_help()
