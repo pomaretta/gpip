@@ -69,8 +69,6 @@ def main(
         exit(1)
 
     # If pip packages install before gpip.
-    options = ('> NUL 2> NUL','> /dev/null 2>&1')[os.name != "nt"]
-    
     target = kwargs['target']
     target_enabled = target != None
 
@@ -78,7 +76,7 @@ def main(
         target = os.path.abspath(target)
 
     if len(pip_packages) > 0:
-        os.system(f"pip3 install {' '.join(pip_packages)} {(options,'')[kwargs['debug']]} {('',f'--target={target}')[target_enabled]}")
+        os.system(f"pip3 install {' '.join(pip_packages)} {('',f'--target={target}')[target_enabled]}")
 
     if len(gpip_packages) > 0:
         get(
