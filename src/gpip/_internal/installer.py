@@ -69,8 +69,7 @@ class Installer:
         if debug:
             print(f"Installing from {path} with {name} package with upgrade={upgrade}, force={force} ,user={user} and target={target}")
 
-        os_options = ('> NUL 2> NUL','> /dev/null 2>&1')[os.name != 'nt']
-        command = f"pip3 install {name} {('',f'--target {target}')[target != None]} {('','--upgrade')[upgrade]} {('','--force-reinstall')[force]} {('','--user')[user]} {(f'--quiet {os_options}','')[debug]}"
+        command = f"pip3 install {name} {('',f'--target {target}')[target != None]} {('','--upgrade')[upgrade]} {('','--force-reinstall')[force]} {('','--user')[user]}"
 
         if debug:
             print("Running with command {}".format(command))
